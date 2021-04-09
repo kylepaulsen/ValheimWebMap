@@ -1,0 +1,33 @@
+* {
+	box-sizing: border-box;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	background: #000;
+	overflow: hidden;
+	height: 100vh;
+	font-family: sans-serif;
+}
+
+canvas {
+	image-rendering: pixelated;
+	position: absolute;
+	border: 1px solid #228;
+}
+
+.playerIcon {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	color: #fff;
+	font-size: 12px;
+	text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 3px #000;
+	user-select: none;
+}
+
+.playerIcon img {
+	width: 50%;
+}
