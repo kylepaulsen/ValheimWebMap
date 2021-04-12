@@ -42,10 +42,16 @@
             "command": "cp ./WebMap/bin/Debug/WebMap.dll '/Program Files (x86)/Steam/steamapps/common/Valheim dedicated server/BepInEx/plugins/WebMap'",
         },
         {
+            "label": "copyWebDir",
+            "type": "shell",
+            "command": "cp -r ./WebMap/web/* '/Program Files (x86)/Steam/steamapps/common/Valheim dedicated server/BepInEx/plugins/WebMap/web'",
+        },
+        {
             "label": "buildAndCopy",
             "dependsOn": [
                 "build",
-                "copyDll"
+                "copyDll",
+                "copyWebDir"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []

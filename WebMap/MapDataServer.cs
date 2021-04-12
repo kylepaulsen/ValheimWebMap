@@ -28,7 +28,7 @@ namespace WebMap {
     public class MapDataServer {
         static int SERVER_PORT = 3000;
         static double PLAYER_UPDATE_RATE = 0.5;
-        static bool CACHE_FILES = true;
+        static bool CACHE_FILES = false;
 
         private HttpServer httpServer;
         private string publicRoot;

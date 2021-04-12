@@ -7,8 +7,9 @@ html, body {
 	padding: 0;
 	background: #000;
 	overflow: hidden;
-	height: 100vh;
+	height: 100%;
 	font-family: sans-serif;
+	touch-action: none;
 }
 
 canvas {
@@ -26,6 +27,7 @@ canvas {
 	font-size: 12px;
 	text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 3px #000;
 	user-select: none;
+	pointer-events: none;
 }
 
 .playerIcon img {
