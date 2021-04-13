@@ -8,14 +8,15 @@ const init = () => {
 		players.forEach((player) => {
 			let playerMapIcon = playerMapIcons[player.id];
 			if (!playerMapIcon) {
-				playerMapIcon = { ...player, type: 'player', text: player.name };
+				playerMapIcon = { ...player, type: 'player', text: player.name, zIndex: 5 };
 				map.addIcon(playerMapIcon);
 				playerMapIcons[player.id] = playerMapIcon;
 			}
 			playerMapIcon.lastUpdate = Date.now();
 			playerMapIcon.x = player.x;
-			playerMapIcon.y = player.y;
-			map.explore(player.x, player.y);
+			playerMapIcon.z = player.z;
+			map.updateIcons();
+			map.explore(player.x, player.z);
 		});
 	});
 
@@ -30,12 +31,6 @@ const init = () => {
 			}
 		});
 	}, 2000);
-
-	map.addIcon({
-		type: 'start',
-		x: 0,
-		y: 0
-	});
 };
 
 export default {

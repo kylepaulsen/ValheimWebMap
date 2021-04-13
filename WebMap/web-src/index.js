@@ -31,6 +31,12 @@ const setup = async () => {
 		fogImage
 	});
 
+	map.addIcon({
+		type: 'start',
+		x: 0,
+		z: 0
+	});
+
 	const pings = {};
 	websocket.addActionListener('ping', (ping) => {
 		let mapIcon = pings[ping.playerId];
@@ -42,7 +48,7 @@ const setup = async () => {
 			pings[ping.playerId] = mapIcon;
 		}
 		mapIcon.x = ping.x;
-		mapIcon.y = ping.y;
+		mapIcon.z = ping.z;
 		map.updateIcons();
 
 		clearTimeout(mapIcon.timeoutId);

@@ -38,6 +38,9 @@ const createIconEl = (iconObj) => {
 	const iconEl = document.createElement('div');
 	iconEl.id = iconObj.id;
 	iconEl.className = `mapIcon ${iconObj.type}`;
+	if (iconObj.zIndex) {
+		iconEl.style.zIndex = iconObj.zIndex;
+	}
 	const iconTextEl = document.createElement('div');
 	iconTextEl.textContent = iconObj.text;
 	iconEl.appendChild(iconTextEl);
@@ -56,7 +59,7 @@ const updateIcons = () => {
 		const adjustX = (iconElement.offsetWidth / 2);
 		const adjustY = (iconElement.offsetHeight / 2);
 		const imgX = iconObj.x / pixelSize + coordOffset;
-		const imgY = height - (iconObj.y / pixelSize + coordOffset);
+		const imgY = height - (iconObj.z / pixelSize + coordOffset);
 
 		iconElement.style.left = (imgX * canvasOffsetScale + canvas.offsetLeft) - adjustX + 'px';
 		iconElement.style.top = (imgY * canvasOffsetScale + canvas.offsetTop) - adjustY + 'px';
@@ -81,10 +84,10 @@ const removeIcon = (iconObj) => {
 	}
 };
 
-const explore = (mapX, mapY) => {
+const explore = (mapX, mapZ) => {
 	const radius = exploreRadius / pixelSize;
 	const x = mapX / pixelSize + coordOffset;
-	const y = height - (mapY / pixelSize + coordOffset);
+	const y = height - (mapZ / pixelSize + coordOffset);
 	fogCanvasCtx.beginPath();
 	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
 	fogCanvasCtx.fill();
@@ -102,7 +105,7 @@ const redrawMap = () => {
 
 const setZoom = function(zoomP) {
 	const minZoom = 50;
-	const maxZoom = 2000 * devicePixelRatio;
+	const maxZoom = 8000 * devicePixelRatio;
 	zoomP = Math.min(Math.max(Math.round(zoomP), minZoom), maxZoom);
 	currentZoom = zoomP;
 	canvas.style.width = `${zoomP}%`;

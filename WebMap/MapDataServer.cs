@@ -60,9 +60,9 @@ namespace WebMap {
                     var zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
                     var pos = zdoData.GetPosition();
                     if (player.m_publicRefPos) {
-                        dataString += $"{player.m_uid}\n{player.m_playerName}\n{pos.x}\n{pos.z}\n";
+                        dataString += $"{player.m_uid}\n{player.m_playerName}\n{pos.x},{pos.y},{pos.z}\n";
                     } else {
-                        dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\nhidden\n";
+                        dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n";
                     }
                 });
                 if (dataString.Length > 0) {

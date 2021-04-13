@@ -26,6 +26,8 @@ namespace WebMap {
         static MapDataServer mapDataServer;
         static string worldDataPath;
 
+        private bool fogTextureNeedsSaving = false;
+
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake() {
             var harmony = new Harmony("com.kylepaulsen.valheim.webmap");
@@ -107,7 +109,11 @@ namespace WebMap {
                                     var yDiff = pixelY - y;
                                     var currentExploreRadiusSquared = xDiff * xDiff + yDiff * yDiff;
                                     if (currentExploreRadiusSquared < pixelExploreRadiusSquared) {
-                                        mapDataServer.fogTexture.SetPixel(x, y, Color.white);
+                                        var fogTexColor = mapDataServer.fogTexture.GetPixel(x, y);
+                                        if (fogTexColor.r < 1f) {
+                                            fogTextureNeedsSaving = true;
+                                            mapDataServer.fogTexture.SetPixel(x, y, Color.white);
+                                        }
                                     }
                                 }
                             }
@@ -118,12 +124,13 @@ namespace WebMap {
         }
 
         public void SaveFogTexture() {
-            if (mapDataServer.players.Count > 0) {
+            if (mapDataServer.players.Count > 0 && fogTextureNeedsSaving) {
                 byte[] pngBytes = mapDataServer.fogTexture.EncodeToPNG();
 
                 Debug.Log("Saving fog file...");
                 try {
                     File.WriteAllBytes(Path.Combine(worldDataPath, "fog.png"), pngBytes);
+                    fogTextureNeedsSaving = false;
                 } catch {
                     Debug.Log("FAILED TO WRITE FOG FILE!");
                 }
