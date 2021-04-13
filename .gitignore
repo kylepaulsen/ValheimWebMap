@@ -328,7 +328,9 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
 
+*/web/main.js
 libs/UnityEngine*
 assembly_valheim.dll
+assembly_utils.dll
 WebMap.dll
 WebMap.zip
