@@ -51,7 +51,9 @@ const redrawMap = () => {
 };
 
 const setZoom = function(zoomP) {
-	zoomP = Math.min(Math.max(Math.round(zoomP), 50), 2000);
+	const minZoom = 50;
+	const maxZoom = 2000 * devicePixelRatio;
+	zoomP = Math.min(Math.max(Math.round(zoomP), minZoom), maxZoom);
 	currentZoom = zoomP;
 	canvas.style.width = `${zoomP}%`;
 };
@@ -70,7 +72,6 @@ const init = (options) => {
 		const oldZoom = currentZoom;
 
 		const zoomAmount = Math.max(Math.floor(oldZoom / 5), 1) * mult;
-		console.log(zoomAmount);
 		const scrollAmt = e.deltaY === 0 ? e.deltaX : e.deltaY;
 		if (scrollAmt > 0) {
 			// zoom out.
@@ -108,15 +109,19 @@ const init = (options) => {
 				canvas.style.top = canvasPreDragPos.y + (e.clientY - pointers[0].downEvent.clientY) + 'px';
 				playerManager.redrawPlayers();
 			} else if (pointers.length === 2) {
-				const diffX = pointers[0].event.clientX - pointers[1].event.clientX;
-				const diffY = pointers[0].event.clientY - pointers[1].event.clientY;
+				const x1 = pointers[0].event.clientX;
+				const y1 = pointers[0].event.clientY;
+				const x2 = pointers[1].event.clientX;
+				const y2 = pointers[1].event.clientY;
+				const diffX = x1 - x2;
+				const diffY = y1 - y2;
 				const dist = Math.sqrt(diffX * diffX + diffY * diffY);
 				if (lastZoomDist) {
 					const diffDist = (lastZoomDist - dist) || -1;
 					zoomChange({
 						deltaY: diffDist,
-						clientX: window.innerWidth / 2,
-						clientY: window.innerHeight / 2
+						clientX: (x1 + x2) / 2,
+						clientY: (y1 + y2) / 2
 					}, 0.08);
 				}
 				lastZoomDist = dist;

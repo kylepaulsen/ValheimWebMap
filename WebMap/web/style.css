@@ -15,7 +15,7 @@ html, body {
 canvas {
 	image-rendering: pixelated;
 	position: absolute;
-	border: 1px solid #228;
+	border: 2px solid #228;
 }
 
 .playerIcon {
