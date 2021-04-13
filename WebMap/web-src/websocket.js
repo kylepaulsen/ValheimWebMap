@@ -1,4 +1,4 @@
-const actionListeners = {};
+const actionListeners = { players: [], ping: [] };
 
 const addActionListener = (type, func) => {
 	const listeners = actionListeners[type] || [];
@@ -31,6 +31,18 @@ const actions = {
 		});
 		actionListeners.players.forEach(func => {
 			func(playerData);
+		});
+	},
+	ping: (lines) => {
+		const xy = lines[2].split(',');
+		const ping = {
+			playerId: lines[0],
+			name: lines[1],
+			x: parseFloat(xy[0]),
+			y: parseFloat(xy[1])
+		};
+		actionListeners.ping.forEach(func => {
+			func(ping);
 		});
 	}
 };

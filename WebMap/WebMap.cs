@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using HarmonyLib;
+using static ZRoutedRpc;
 
 namespace WebMap {
     //This attribute is required, and lists metadata for your plugin.
@@ -91,18 +92,23 @@ namespace WebMap {
 
             mapDataServer.players.ForEach(player => {
                 if (player.m_publicRefPos) {
-                    var zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
-                    var pos = zdoData.GetPosition();
-                    var pixelX = Mathf.RoundToInt(pos.x / PIXEL_SIZE + halfTextureSize);
-                    var pixelY = Mathf.RoundToInt(pos.z / PIXEL_SIZE + halfTextureSize);
-                    for (var y = pixelY - pixelExploreRadius; y <= pixelY + pixelExploreRadius; y++) {
-                        for (var x = pixelX - pixelExploreRadius; x <= pixelX + pixelExploreRadius; x++) {
-                            if (y >= 0 && x >= 0 && y < TEXTURE_SIZE && x < TEXTURE_SIZE) {
-                                var xDiff = pixelX - x;
-                                var yDiff = pixelY - y;
-                                var currentExploreRadiusSquared = xDiff * xDiff + yDiff * yDiff;
-                                if (currentExploreRadiusSquared < pixelExploreRadiusSquared) {
-                                    mapDataServer.fogTexture.SetPixel(x, y, Color.white);
+                    ZDO zdoData = null;
+                    try {
+                        zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
+                    } catch {}
+                    if (zdoData != null) {
+                        var pos = zdoData.GetPosition();
+                        var pixelX = Mathf.RoundToInt(pos.x / PIXEL_SIZE + halfTextureSize);
+                        var pixelY = Mathf.RoundToInt(pos.z / PIXEL_SIZE + halfTextureSize);
+                        for (var y = pixelY - pixelExploreRadius; y <= pixelY + pixelExploreRadius; y++) {
+                            for (var x = pixelX - pixelExploreRadius; x <= pixelX + pixelExploreRadius; x++) {
+                                if (y >= 0 && x >= 0 && y < TEXTURE_SIZE && x < TEXTURE_SIZE) {
+                                    var xDiff = pixelX - x;
+                                    var yDiff = pixelY - y;
+                                    var currentExploreRadiusSquared = xDiff * xDiff + yDiff * yDiff;
+                                    if (currentExploreRadiusSquared < pixelExploreRadiusSquared) {
+                                        mapDataServer.fogTexture.SetPixel(x, y, Color.white);
+                                    }
                                 }
                             }
                         }
@@ -291,6 +297,44 @@ namespace WebMap {
         private class ZNetPatch {
             static void Postfix(List<ZNetPeer> ___m_peers) {
                 mapDataServer.players = ___m_peers;
+            }
+        }
+
+        private static readonly int sayMethodHash = "Say".GetStableHashCode();
+        private static readonly int chatMessageMethodHash = "ChatMessage".GetStableHashCode();
+
+        [HarmonyPatch(typeof (ZRoutedRpc), "HandleRoutedRPC")]
+        private class ZRoutedRpcPatch {
+            static void Prefix(RoutedRPCData data) {
+                if (data?.m_methodHash == sayMethodHash) {
+                    try {
+                        ZPackage package = new ZPackage(data.m_parameters.GetArray());
+                        int messageType = package.ReadInt();
+                        string userName = package.ReadString();
+                        string message = package.ReadString();
+                        message = (message == null ? "" : message).Trim();
+
+                        Debug.Log("SAY!!! " + messageType + " | " + userName + " | " + message);
+                    } catch (Exception e) {
+                        Debug.Log("Failed processing RoutedRPCData" + e);
+                    }
+                } else if (data?.m_methodHash == chatMessageMethodHash) {
+                    try {
+                        ZPackage package = new ZPackage(data.m_parameters.GetArray());
+                        Vector3 pos = package.ReadVector3();
+                        int messageType = package.ReadInt();
+                        string userName = package.ReadString();
+                        // string message = package.ReadString();
+                        // message = (message == null ? "" : message).Trim();
+
+                        if (messageType == 3) {
+                            mapDataServer.BroadcastPing(data.m_senderPeerID, userName, pos);
+                        }
+                        // Debug.Log("CHAT!!! " + pos + " | " + messageType + " | " + userName + " | " + message);
+                    } catch (Exception e) {
+                        Debug.Log("Failed processing RoutedRPCData" + e);
+                    }
+                }
             }
         }
     }

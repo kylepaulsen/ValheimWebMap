@@ -1,7 +1,5 @@
 import ui from './ui';
 import constants from "./constants";
-import playerManager from "./players";
-import websocket from "./websocket";
 import onPointers from "./onPointers";
 
 const { canvas } = ui;
@@ -11,6 +9,10 @@ const height = constants.CANVAS_HEIGHT;
 const exploreRadius = constants.EXPLORE_RADIUS;
 const pixelSize = constants.PIXEL_SIZE;
 const coordOffset = constants.COORD_OFFSET;
+
+// preload map icons.
+const mapIconImage = document.createElement('img');
+mapIconImage.src = 'mapIcons.png';
 
 canvas.width = width;
 canvas.height = height;
@@ -30,15 +32,62 @@ fogCanvasCtx.fillStyle = '#ffffff';
 
 let currentZoom = 100;
 
-const updateFog = () => {
-	const radius = exploreRadius / pixelSize;
-	playerManager.players.forEach(player => {
-		const x = player.x / pixelSize + coordOffset;
-		const y = height - (player.y / pixelSize + coordOffset);
-		fogCanvasCtx.beginPath();
-		fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
-		fogCanvasCtx.fill();
+const mapIcons = [];
+
+const createIconEl = (iconObj) => {
+	const iconEl = document.createElement('div');
+	iconEl.id = iconObj.id;
+	iconEl.className = `mapIcon ${iconObj.type}`;
+	const iconTextEl = document.createElement('div');
+	iconTextEl.textContent = iconObj.text;
+	iconEl.appendChild(iconTextEl);
+	return iconEl;
+};
+
+const updateIcons = () => {
+	const canvasOffsetScale = canvas.offsetWidth / width;
+
+	mapIcons.forEach(iconObj => {
+		let iconElement = document.getElementById(iconObj.id);
+		if (!iconElement) {
+			iconElement = createIconEl(iconObj);
+			document.body.appendChild(iconElement);
+		}
+		const adjustX = (iconElement.offsetWidth / 2);
+		const adjustY = (iconElement.offsetHeight / 2);
+		const imgX = iconObj.x / pixelSize + coordOffset;
+		const imgY = height - (iconObj.y / pixelSize + coordOffset);
+
+		iconElement.style.left = (imgX * canvasOffsetScale + canvas.offsetLeft) - adjustX + 'px';
+		iconElement.style.top = (imgY * canvasOffsetScale + canvas.offsetTop) - adjustY + 'px';
 	});
+};
+
+const addIcon = (iconObj, update = true) => {
+	if (!iconObj.id) {
+		iconObj.id = `id_${Date.now()}_${Math.random()}`;
+	}
+	mapIcons.push(iconObj);
+	if (update) {
+		updateIcons();
+	}
+};
+
+const removeIcon = (iconObj) => {
+	mapIcons.splice(mapIcons.indexOf(iconObj), 1);
+	const iconElement = document.getElementById(iconObj.id);
+	if (iconElement) {
+		iconElement.remove();
+	}
+};
+
+const explore = (mapX, mapY) => {
+	const radius = exploreRadius / pixelSize;
+	const x = mapX / pixelSize + coordOffset;
+	const y = height - (mapY / pixelSize + coordOffset);
+	fogCanvasCtx.beginPath();
+	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
+	fogCanvasCtx.fill();
 };
 
 const redrawMap = () => {
@@ -46,8 +95,9 @@ const redrawMap = () => {
 	ctx.globalCompositeOperation = 'source-over';
 	ctx.drawImage(mapImage, 0, 0);
 	ctx.globalCompositeOperation = 'multiply';
-	updateFog();
 	ctx.drawImage(fogCanvas, 0, 0);
+
+	updateIcons();
 };
 
 const setZoom = function(zoomP) {
@@ -66,8 +116,6 @@ const init = (options) => {
 
 	redrawMap();
 
-	websocket.addActionListener('players', redrawMap);
-
 	const zoomChange = (e, mult = 1) => {
 		const oldZoom = currentZoom;
 
@@ -84,7 +132,7 @@ const init = (options) => {
 
 		canvas.style.left = zoomRatio * (canvas.offsetLeft - e.clientX) + e.clientX + 'px';
 		canvas.style.top = zoomRatio * (canvas.offsetTop - e.clientY) + e.clientY + 'px';
-		playerManager.redrawPlayers();
+		updateIcons();
 	};
 
 	window.addEventListener('wheel', zoomChange);
@@ -107,7 +155,7 @@ const init = (options) => {
 				const e = pointers[0].event;
 				canvas.style.left = canvasPreDragPos.x + (e.clientX - pointers[0].downEvent.clientX) + 'px';
 				canvas.style.top = canvasPreDragPos.y + (e.clientY - pointers[0].downEvent.clientY) + 'px';
-				playerManager.redrawPlayers();
+				updateIcons();
 			} else if (pointers.length === 2) {
 				const x1 = pointers[0].event.clientX;
 				const y1 = pointers[0].event.clientY;
@@ -137,6 +185,11 @@ const init = (options) => {
 
 export default {
 	init,
+	addIcon,
+	removeIcon,
+	explore,
+	update: redrawMap,
+	updateIcons,
 	canvas
 };
 

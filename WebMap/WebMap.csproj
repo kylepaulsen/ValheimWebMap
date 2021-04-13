@@ -32,6 +32,9 @@
     <Reference Include="assembly_valheim">
       <HintPath>..\libs\assembly_valheim.dll</HintPath>
     </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>..\libs\assembly_utils.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\libs\BepInEx.dll</HintPath>
     </Reference>

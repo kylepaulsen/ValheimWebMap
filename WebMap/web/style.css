@@ -18,18 +18,66 @@ canvas {
 	border: 2px solid #228;
 }
 
-.playerIcon {
+@keyframes pulse {
+	from { transform: scale(1); }
+	50% { transform: scale(1.5); }
+	to { transform: scale(1); }
+}
+
+.mapIcon {
 	position: fixed;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+	width: 32px;
+	height: 32px;
+	background-image: url('mapIcons.png');
+	background-size: 160px;
+}
+
+.mapIcon div {
+	position: absolute;
+	left: 50%;
+	bottom: -14px;
+	transform: translate(-50%, 0);
 	color: #fff;
 	font-size: 12px;
+	white-space: nowrap;
 	text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 3px #000;
 	user-select: none;
 	pointer-events: none;
 }
 
-.playerIcon img {
-	width: 50%;
+.mapIcon.player {
+	background-position: 0 0;
+}
+
+.mapIcon.fire {
+	background-position: -32px 0;
+}
+
+.mapIcon.dot {
+	background-position: -64px 0;
+}
+
+.mapIcon.mine {
+	background-position: -96px 0;
+}
+
+.mapIcon.house {
+	background-position: -128px 0;
+}
+
+.mapIcon.cave {
+	background-position: 0 -32px;
+}
+
+.mapIcon.boss {
+	background-position: -32px -32px;
+}
+
+.mapIcon.start {
+	background-position: -64px -32px;
+}
+
+.mapIcon.ping {
+	background-position: -96px -32px;
+	animation: pulse 1.2s ease-in-out infinite;
 }

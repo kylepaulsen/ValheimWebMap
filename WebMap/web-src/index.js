@@ -19,7 +19,7 @@ const fetchFog = () => new Promise((res) => {
 
 const setup = async () => {
 	websocket.init();
-	players.init({ canvas: map.canvas });
+	players.init();
 
 	await Promise.all([
 		fetchMap(),
@@ -29,6 +29,31 @@ const setup = async () => {
 	map.init({
 		mapImage,
 		fogImage
+	});
+
+	const pings = {};
+	websocket.addActionListener('ping', (ping) => {
+		let mapIcon = pings[ping.playerId];
+		if (!mapIcon) {
+			mapIcon = { ...ping };
+			mapIcon.type = 'ping';
+			mapIcon.text = ping.name;
+			map.addIcon(mapIcon, false);
+			pings[ping.playerId] = mapIcon;
+		}
+		mapIcon.x = ping.x;
+		mapIcon.y = ping.y;
+		map.updateIcons();
+
+		clearTimeout(mapIcon.timeoutId);
+		mapIcon.timeoutId = setTimeout(() => {
+			delete pings[ping.playerId];
+			map.removeIcon(mapIcon);
+		}, 8000);
+	});
+
+	window.addEventListener('resize', () => {
+		map.update();
 	});
 };
 

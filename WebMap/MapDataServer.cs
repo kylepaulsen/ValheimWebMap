@@ -33,7 +33,7 @@ namespace WebMap {
         private HttpServer httpServer;
         private string publicRoot;
         private Dictionary<string, byte[]> fileCache;
-        private Timer broadcastTimer;
+        private System.Threading.Timer broadcastTimer;
         private WebSocketServiceHost webSocketHandler;
 
         public byte[] mapImageData;
@@ -54,7 +54,7 @@ namespace WebMap {
 
             webSocketHandler = httpServer.WebSocketServices["/"];
 
-            broadcastTimer = new Timer((e) => {
+            broadcastTimer = new System.Threading.Timer((e) => {
                 var dataString = "";
                 players.ForEach(player => {
                     var zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
@@ -171,6 +171,10 @@ namespace WebMap {
             } else {
                 Debug.Log("!!! HTTP Server Failed To Start !!!");
             }
+        }
+
+        public void BroadcastPing(long id, string name, Vector3 position) {
+            webSocketHandler.Sessions.Broadcast($"ping\n{id}\n{name}\n{position.x},{position.z}");
         }
     }
 }

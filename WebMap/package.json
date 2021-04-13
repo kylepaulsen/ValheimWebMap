@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "A Valheim map viewer for the browser",
   "scripts": {
-    "build": "webpack ./web-src/index.js -o ./web --mode production"
+    "build": "webpack ./web-src/index.js -o ./web --mode development",
+    "build-prod": "webpack ./web-src/index.js -o ./web --mode production"
   },
   "author": "Kyle Paulsen <kyle.a.paulsen@gmail.com>",
   "license": "ISC",
