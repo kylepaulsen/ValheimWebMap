@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using BepInEx;
@@ -22,6 +23,10 @@ namespace WebMap {
         static readonly float EXPLORE_RADIUS = 100f;
         static readonly float UPDATE_FOG_TEXTURE_INTERVAL = 1f;
         static readonly float SAVE_FOG_TEXTURE_INTERVAL = 30f;
+        static readonly int MAX_PINS_PER_USER = 50;
+
+        static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        static readonly HashSet<string> ALLOWED_PINS = new HashSet<string> { "dot", "fire", "mine", "house", "cave" };
 
         static MapDataServer mapDataServer;
         static string worldDataPath;
@@ -85,6 +90,14 @@ namespace WebMap {
 
             InvokeRepeating("UpdateFogTexture", UPDATE_FOG_TEXTURE_INTERVAL, UPDATE_FOG_TEXTURE_INTERVAL);
             InvokeRepeating("SaveFogTexture", SAVE_FOG_TEXTURE_INTERVAL, SAVE_FOG_TEXTURE_INTERVAL);
+
+            var mapPinsFile = Path.Combine(worldDataPath, "pins.csv");
+            try {
+                var pinsLines = File.ReadAllLines(mapPinsFile);
+                mapDataServer.pins = new List<string>(pinsLines);
+            } catch (Exception e) {
+                Debug.Log("Failed to read pins.csv from disk. " + e.Message);
+            }
         }
 
         public void UpdateFogTexture() {
@@ -134,6 +147,15 @@ namespace WebMap {
                 } catch {
                     Debug.Log("FAILED TO WRITE FOG FILE!");
                 }
+            }
+        }
+
+        public static void SavePins() {
+            var mapPinsFile = Path.Combine(worldDataPath, "pins.csv");
+            try {
+                File.WriteAllLines(mapPinsFile, mapDataServer.pins);
+            } catch {
+                Debug.Log("FAILED TO WRITE PINS FILE!");
             }
         }
 
@@ -313,15 +335,58 @@ namespace WebMap {
         [HarmonyPatch(typeof (ZRoutedRpc), "HandleRoutedRPC")]
         private class ZRoutedRpcPatch {
             static void Prefix(RoutedRPCData data) {
+                ZNetPeer peer = ZNet.instance.GetPeer(data.m_senderPeerID);
+                var steamid = "";
+                try {
+                    steamid = peer.m_rpc.GetSocket().GetHostName();
+                } catch {}
+
                 if (data?.m_methodHash == sayMethodHash) {
                     try {
+                        var zdoData = ZDOMan.instance.GetZDO(peer.m_characterID);
+                        var pos = zdoData.GetPosition();
                         ZPackage package = new ZPackage(data.m_parameters.GetArray());
                         int messageType = package.ReadInt();
                         string userName = package.ReadString();
                         string message = package.ReadString();
                         message = (message == null ? "" : message).Trim();
 
-                        Debug.Log("SAY!!! " + messageType + " | " + userName + " | " + message);
+                        if (message.StartsWith("/pin")) {
+                            var messageParts = message.Split(' ');
+                            var pinType = "dot";
+                            var startIdx = 1;
+                            if (messageParts.Length > 1 && ALLOWED_PINS.Contains(messageParts[1])) {
+                                pinType = messageParts[1];
+                                startIdx = 2;
+                            }
+                            var pinText = "";
+                            if (startIdx < messageParts.Length) {
+                                pinText = String.Join(" ", messageParts, startIdx, messageParts.Length - startIdx);
+                            }
+                            if (pinText.Length > 20) {
+                                pinText = pinText.Substring(0, 20);
+                            }
+                            var safePinsText = Regex.Replace(pinText, @"[^a-zA-Z0-9 ]", "");
+
+                            var timestamp = DateTime.Now - unixEpoch;
+                            var pinId = $"{timestamp.TotalMilliseconds}-{UnityEngine.Random.Range(1000, 9999)}";
+                            mapDataServer.AddPin(steamid, pinId, pinType, userName, pos, safePinsText);
+
+                            var usersPins = mapDataServer.pins.FindAll(pin => pin.StartsWith(steamid));
+                            var numOverflowPins = usersPins.Count - MAX_PINS_PER_USER;
+                            for (var t = numOverflowPins; t > 0; t--) {
+                                var pinIdx = mapDataServer.pins.FindIndex(pin => pin.StartsWith(steamid));
+                                mapDataServer.RemovePin(pinIdx);
+                            }
+                            SavePins();
+                        } else if (message.StartsWith("/undoPin")) {
+                            var pinIdx = mapDataServer.pins.FindLastIndex(pin => pin.StartsWith(steamid));
+                            if (pinIdx > -1) {
+                                mapDataServer.RemovePin(pinIdx);
+                                SavePins();
+                            }
+                        }
+                        //Debug.Log("SAY!!! " + messageType + " | " + userName + " | " + message);
                     } catch (Exception e) {
                         Debug.Log("Failed processing RoutedRPCData" + e);
                     }

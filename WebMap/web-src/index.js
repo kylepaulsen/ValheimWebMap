@@ -58,6 +58,32 @@ const setup = async () => {
 		}, 8000);
 	});
 
+	fetch('pins').then(res => res.text()).then(text => {
+		const lines = text.split('\n');
+		lines.forEach(line => {
+			const lineParts = line.split(',');
+			const pin = {
+				id: lineParts[1],
+				uid: lineParts[0],
+				type: lineParts[2],
+				name: lineParts[3],
+				x: lineParts[4],
+				z: lineParts[5],
+				text: lineParts[6]
+			};
+			map.addIcon(pin, false);
+		});
+		map.updateIcons();
+	});
+
+	websocket.addActionListener('pin', (pin) => {
+		map.addIcon(pin);
+	});
+
+	websocket.addActionListener('rmpin', (pinid) => {
+		map.removeIconById(pinid);
+	});
+
 	window.addEventListener('resize', () => {
 		map.update();
 	});

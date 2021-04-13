@@ -84,6 +84,13 @@ const removeIcon = (iconObj) => {
 	}
 };
 
+const removeIconById = (iconId) => {
+	const iconToRemove = mapIcons.find(icon => icon.id === iconId);
+	if (iconToRemove) {
+		removeIcon(iconToRemove);
+	}
+};
+
 const explore = (mapX, mapZ) => {
 	const radius = exploreRadius / pixelSize;
 	const x = mapX / pixelSize + coordOffset;
@@ -190,6 +197,7 @@ export default {
 	init,
 	addIcon,
 	removeIcon,
+	removeIconById,
 	explore,
 	update: redrawMap,
 	updateIcons,

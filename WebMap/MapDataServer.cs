@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -39,6 +40,7 @@ namespace WebMap {
         public byte[] mapImageData;
         public Texture2D fogTexture;
         public List<ZNetPeer> players = new List<ZNetPeer>();
+        public List<string> pins = new List<string>();
 
         static Dictionary<string, string> contentTypes = new Dictionary<string, string>() {
             { "html", "text/html" },
@@ -159,6 +161,15 @@ namespace WebMap {
                     res.ContentLength64 = fogBytes.Length;
                     res.Close(fogBytes, true);
                     return true;
+                case "/pins":
+                    res.Headers.Add(HttpResponseHeader.CacheControl, "no-cache");
+                    res.ContentType = "text/csv";
+                    res.StatusCode = 200;
+                    var text = String.Join("\n", pins);
+                    var textBytes = Encoding.UTF8.GetBytes(text);
+                    res.ContentLength64 = textBytes.Length;
+                    res.Close(textBytes, true);
+                    return true;
             }
             return false;
         }
@@ -175,6 +186,18 @@ namespace WebMap {
 
         public void BroadcastPing(long id, string name, Vector3 position) {
             webSocketHandler.Sessions.Broadcast($"ping\n{id}\n{name}\n{position.x},{position.z}");
+        }
+
+        public void AddPin(string id, string pinId, string type, string name, Vector3 position, string pinText) {
+            pins.Add($"{id},{pinId},{type},{name},{position.x},{position.z},{pinText}");
+            webSocketHandler.Sessions.Broadcast($"pin\n{id}\n{pinId}\n{type}\n{name}\n{position.x},{position.z}\n{pinText}");
+        }
+
+        public void RemovePin(int idx) {
+            var pin = pins[idx];
+            var pinParts = pin.Split(',');
+            pins.RemoveAt(idx);
+            webSocketHandler.Sessions.Broadcast($"rmpin\n{pinParts[1]}");
         }
     }
 }

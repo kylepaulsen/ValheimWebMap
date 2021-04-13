@@ -46,6 +46,26 @@ const actions = {
 		actionListeners.ping.forEach(func => {
 			func(ping);
 		});
+	},
+	pin: (lines) => {
+		const xz = lines[4].split(',').map(parseFloat);
+		const pin = {
+			id: lines[1],
+			uid: lines[0],
+			type: lines[2],
+			name: lines[3],
+			x: xz[0],
+			z: xz[1],
+			text: lines[5]
+		};
+		actionListeners.pin.forEach(func => {
+			func(pin);
+		});
+	},
+	rmpin: (lines) => {
+		actionListeners.rmpin.forEach(func => {
+			func(lines[0]);
+		});
 	}
 };
 
