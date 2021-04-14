@@ -11,7 +11,7 @@ const actions = {
 		const playerData = [];
 		let newPlayer = {};
 		lines.forEach((line, idx) => {
-			const dataIdx = idx % 4;
+			const dataIdx = idx % 3;
 			switch (dataIdx) {
 				case 0:
 					newPlayer.id = line;

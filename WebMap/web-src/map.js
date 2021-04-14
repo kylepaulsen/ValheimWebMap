@@ -91,15 +91,6 @@ const removeIconById = (iconId) => {
 	}
 };
 
-const explore = (mapX, mapZ) => {
-	const radius = exploreRadius / pixelSize;
-	const x = mapX / pixelSize + coordOffset;
-	const y = height - (mapZ / pixelSize + coordOffset);
-	fogCanvasCtx.beginPath();
-	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
-	fogCanvasCtx.fill();
-};
-
 const redrawMap = () => {
 	ctx.clearRect(0, 0, width, height);
 	ctx.globalCompositeOperation = 'source-over';
@@ -108,6 +99,16 @@ const redrawMap = () => {
 	ctx.drawImage(fogCanvas, 0, 0);
 
 	updateIcons();
+};
+
+const explore = (mapX, mapZ) => {
+	const radius = exploreRadius / pixelSize;
+	const x = mapX / pixelSize + coordOffset;
+	const y = height - (mapZ / pixelSize + coordOffset);
+	fogCanvasCtx.beginPath();
+	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
+	fogCanvasCtx.fill();
+	redrawMap();
 };
 
 const setZoom = function(zoomP) {
