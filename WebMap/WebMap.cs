@@ -380,6 +380,22 @@ namespace WebMap {
                                 mapDataServer.RemovePin(pinIdx);
                                 SavePins();
                             }
+                        } else if (message.StartsWith("/deletePin")) {
+                            var messageParts = message.Split(' ');
+                            var pinText = "";
+                            if (messageParts.Length > 1) {
+                                pinText = String.Join(" ", messageParts, 1, messageParts.Length - 1);
+                            }
+
+                            var pinIdx = mapDataServer.pins.FindLastIndex(pin => {
+                                var pinParts = pin.Split(',');
+                                return pinParts[0] == steamid && pinParts[pinParts.Length - 1] == pinText;
+                            });
+
+                            if (pinIdx > -1) {
+                                mapDataServer.RemovePin(pinIdx);
+                                SavePins();
+                            }
                         }
                         //Debug.Log("SAY!!! " + messageType + " | " + userName + " | " + message);
                     } catch (Exception e) {
