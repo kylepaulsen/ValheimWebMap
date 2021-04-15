@@ -1,3 +1,4 @@
+import constants from "./constants";
 import websocket from "./websocket";
 import map from "./map";
 import players from "./players";
@@ -17,13 +18,21 @@ const fetchFog = () => new Promise((res) => {
 	fogImage.src = 'fog';
 });
 
+const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
+	constants.CANVAS_WIDTH = config.texture_size || 2048;
+	constants.CANVAS_HEIGHT = config.texture_size || 2048;
+	constants.PIXEL_SIZE = config.pixel_size || 12;
+	constants.EXPLORE_RADIUS = config.explore_radius || 100;
+});
+
 const setup = async () => {
 	websocket.init();
 	players.init();
 
 	await Promise.all([
 		fetchMap(),
-		fetchFog()
+		fetchFog(),
+		fetchConfig
 	]);
 
 	map.init({

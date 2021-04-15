@@ -18,12 +18,6 @@ namespace WebMap {
     //This is the main declaration of our plugin class. BepInEx searches for all classes inheriting from BaseUnityPlugin to initialize on startup.
     //BaseUnityPlugin itself inherits from MonoBehaviour, so you can use this as a reference for what you can declare and use in your plugin class: https://docs.unity3d.com/ScriptReference/MonoBehaviour.html
     public class WebMap : BaseUnityPlugin {
-        static readonly int TEXTURE_SIZE = 2048;
-        static readonly int PIXEL_SIZE = 12;
-        static readonly float EXPLORE_RADIUS = 100f;
-        static readonly float UPDATE_FOG_TEXTURE_INTERVAL = 1f;
-        static readonly float SAVE_FOG_TEXTURE_INTERVAL = 30f;
-        static readonly int MAX_PINS_PER_USER = 50;
 
         static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         static readonly HashSet<string> ALLOWED_PINS = new HashSet<string> { "dot", "fire", "mine", "house", "cave" };
@@ -38,6 +32,9 @@ namespace WebMap {
             var harmony = new Harmony("com.kylepaulsen.valheim.webmap");
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), (string) null);
 
+            var pluginPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            WebMapConfig.readConfigFile(Path.Combine(pluginPath, "config.json"));
+
             string[] arguments = Environment.GetCommandLineArgs();
             var worldName = "";
             for (var t = 0; t < arguments.Length; t++) {
@@ -46,8 +43,6 @@ namespace WebMap {
                     break;
                 }
             }
-
-            var pluginPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var mapDataPath = Path.Combine(pluginPath, "map_data");
             Directory.CreateDirectory(mapDataPath);
@@ -66,14 +61,14 @@ namespace WebMap {
 
             var fogImagePath = Path.Combine(worldDataPath, "fog.png");
             try {
-                var fogTexture = new Texture2D(TEXTURE_SIZE, TEXTURE_SIZE);
+                var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE);
                 var fogBytes = File.ReadAllBytes(fogImagePath);
                 fogTexture.LoadImage(fogBytes);
                 mapDataServer.fogTexture = fogTexture;
             } catch (Exception e) {
                 Debug.Log("Failed to read fog image data from disk... Making new fog image..." + e.Message);
-                var fogTexture = new Texture2D(TEXTURE_SIZE, TEXTURE_SIZE, TextureFormat.RGB24, false);
-                var fogColors = new Color32[TEXTURE_SIZE * TEXTURE_SIZE];
+                var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE, TextureFormat.RGB24, false);
+                var fogColors = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
                 for (var t = 0; t < fogColors.Length; t++) {
                     fogColors[t] = Color.black;
                 }
@@ -88,8 +83,8 @@ namespace WebMap {
                 }
             }
 
-            InvokeRepeating("UpdateFogTexture", UPDATE_FOG_TEXTURE_INTERVAL, UPDATE_FOG_TEXTURE_INTERVAL);
-            InvokeRepeating("SaveFogTexture", SAVE_FOG_TEXTURE_INTERVAL, SAVE_FOG_TEXTURE_INTERVAL);
+            InvokeRepeating("UpdateFogTexture", WebMapConfig.UPDATE_FOG_TEXTURE_INTERVAL, WebMapConfig.UPDATE_FOG_TEXTURE_INTERVAL);
+            InvokeRepeating("SaveFogTexture", WebMapConfig.SAVE_FOG_TEXTURE_INTERVAL, WebMapConfig.SAVE_FOG_TEXTURE_INTERVAL);
 
             var mapPinsFile = Path.Combine(worldDataPath, "pins.csv");
             try {
@@ -101,9 +96,9 @@ namespace WebMap {
         }
 
         public void UpdateFogTexture() {
-            int pixelExploreRadius = (int)Mathf.Ceil(EXPLORE_RADIUS / PIXEL_SIZE);
+            int pixelExploreRadius = (int)Mathf.Ceil(WebMapConfig.EXPLORE_RADIUS / WebMapConfig.PIXEL_SIZE);
             int pixelExploreRadiusSquared = pixelExploreRadius * pixelExploreRadius;
-            var halfTextureSize = TEXTURE_SIZE / 2;
+            var halfTextureSize = WebMapConfig.TEXTURE_SIZE / 2;
 
             mapDataServer.players.ForEach(player => {
                 if (player.m_publicRefPos) {
@@ -113,11 +108,11 @@ namespace WebMap {
                     } catch {}
                     if (zdoData != null) {
                         var pos = zdoData.GetPosition();
-                        var pixelX = Mathf.RoundToInt(pos.x / PIXEL_SIZE + halfTextureSize);
-                        var pixelY = Mathf.RoundToInt(pos.z / PIXEL_SIZE + halfTextureSize);
+                        var pixelX = Mathf.RoundToInt(pos.x / WebMapConfig.PIXEL_SIZE + halfTextureSize);
+                        var pixelY = Mathf.RoundToInt(pos.z / WebMapConfig.PIXEL_SIZE + halfTextureSize);
                         for (var y = pixelY - pixelExploreRadius; y <= pixelY + pixelExploreRadius; y++) {
                             for (var x = pixelX - pixelExploreRadius; x <= pixelX + pixelExploreRadius; x++) {
-                                if (y >= 0 && x >= 0 && y < TEXTURE_SIZE && x < TEXTURE_SIZE) {
+                                if (y >= 0 && x >= 0 && y < WebMapConfig.TEXTURE_SIZE && x < WebMapConfig.TEXTURE_SIZE) {
                                     var xDiff = pixelX - x;
                                     var yDiff = pixelY - y;
                                     var currentExploreRadiusSquared = xDiff * xDiff + yDiff * yDiff;
@@ -245,20 +240,20 @@ namespace WebMap {
                 }
                 Debug.Log("BUILD MAP!");
 
-                int num = TEXTURE_SIZE / 2;
-                float num2 = PIXEL_SIZE / 2f;
-                Color32[] colorArray = new Color32[TEXTURE_SIZE * TEXTURE_SIZE];
-                Color32[] treeMaskArray = new Color32[TEXTURE_SIZE * TEXTURE_SIZE];
-                float[] heightArray = new float[TEXTURE_SIZE * TEXTURE_SIZE];
-                for (int i = 0; i < TEXTURE_SIZE; i++) {
-                    for (int j = 0; j < TEXTURE_SIZE; j++) {
-                        float wx = (float)(j - num) * PIXEL_SIZE + num2;
-                        float wy = (float)(i - num) * PIXEL_SIZE + num2;
+                int num = WebMapConfig.TEXTURE_SIZE / 2;
+                float num2 = WebMapConfig.PIXEL_SIZE / 2f;
+                Color32[] colorArray = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
+                Color32[] treeMaskArray = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
+                float[] heightArray = new float[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
+                for (int i = 0; i < WebMapConfig.TEXTURE_SIZE; i++) {
+                    for (int j = 0; j < WebMapConfig.TEXTURE_SIZE; j++) {
+                        float wx = (float)(j - num) * WebMapConfig.PIXEL_SIZE + num2;
+                        float wy = (float)(i - num) * WebMapConfig.PIXEL_SIZE + num2;
                         Heightmap.Biome biome = WorldGenerator.instance.GetBiome(wx, wy);
                         float biomeHeight = WorldGenerator.instance.GetBiomeHeight(biome, wx, wy);
-                        colorArray[i * TEXTURE_SIZE + j] = GetPixelColor(biome);
-                        treeMaskArray[i * TEXTURE_SIZE + j] = GetMaskColor(wx, wy, biomeHeight, biome);
-                        heightArray[i * TEXTURE_SIZE + j] = biomeHeight;
+                        colorArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetPixelColor(biome);
+                        treeMaskArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetMaskColor(wx, wy, biomeHeight, biome);
+                        heightArray[i * WebMapConfig.TEXTURE_SIZE + j] = biomeHeight;
                     }
                 }
 
@@ -269,11 +264,11 @@ namespace WebMap {
                 for (var t = 0; t < colorArray.Length; t++) {
                     var h = heightArray[t];
 
-                    var tUp = t - TEXTURE_SIZE;
+                    var tUp = t - WebMapConfig.TEXTURE_SIZE;
                     if (tUp < 0) {
                         tUp = t;
                     }
-                    var tDown = t + TEXTURE_SIZE;
+                    var tDown = t + WebMapConfig.TEXTURE_SIZE;
                     if (tDown > colorArray.Length - 1) {
                         tDown = t;
                     }
@@ -308,7 +303,7 @@ namespace WebMap {
                     newColors[t] = new Color(ans.r * surfaceLight, ans.g * surfaceLight, ans.b * surfaceLight, ans.a);
                 }
 
-                var newTexture = new Texture2D(TEXTURE_SIZE, TEXTURE_SIZE, TextureFormat.RGBA32, false);
+                var newTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE, TextureFormat.RGBA32, false);
                 newTexture.SetPixels(newColors);
                 byte[] pngBytes = newTexture.EncodeToPNG();
 
@@ -373,7 +368,7 @@ namespace WebMap {
                             mapDataServer.AddPin(steamid, pinId, pinType, userName, pos, safePinsText);
 
                             var usersPins = mapDataServer.pins.FindAll(pin => pin.StartsWith(steamid));
-                            var numOverflowPins = usersPins.Count - MAX_PINS_PER_USER;
+                            var numOverflowPins = usersPins.Count - WebMapConfig.MAX_PINS_PER_USER;
                             for (var t = numOverflowPins; t > 0; t--) {
                                 var pinIdx = mapDataServer.pins.FindIndex(pin => pin.StartsWith(steamid));
                                 mapDataServer.RemovePin(pinIdx);

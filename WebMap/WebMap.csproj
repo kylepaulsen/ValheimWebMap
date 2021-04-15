@@ -26,6 +26,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="0Harmony">
       <HintPath>..\libs\0Harmony.dll</HintPath>
     </Reference>
@@ -60,6 +61,8 @@
   <ItemGroup>
     <Compile Include="WebMap.cs" />
     <Compile Include="MapDataServer.cs" />
+    <Compile Include="JSONParser.cs" />
+    <Compile Include="Config.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

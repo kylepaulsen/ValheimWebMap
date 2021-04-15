@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Reflection;
 
 using WebSocketSharp.Net;
@@ -27,10 +26,6 @@ namespace WebMap {
     }
 
     public class MapDataServer {
-        static int SERVER_PORT = 3000;
-        static double PLAYER_UPDATE_RATE = 0.5;
-        static bool CACHE_FILES = false;
-
         private HttpServer httpServer;
         private string publicRoot;
         private Dictionary<string, byte[]> fileCache;
@@ -50,7 +45,7 @@ namespace WebMap {
         };
 
         public MapDataServer() {
-            httpServer = new HttpServer(SERVER_PORT);
+            httpServer = new HttpServer(WebMapConfig.SERVER_PORT);
             httpServer.AddWebSocketService<WebSocketHandler>("/");
             httpServer.KeepClean = true;
 
@@ -70,7 +65,7 @@ namespace WebMap {
                 if (dataString.Length > 0) {
                     webSocketHandler.Sessions.Broadcast("players\n" + dataString);
                 }
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(PLAYER_UPDATE_RATE));
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(WebMapConfig.PLAYER_UPDATE_INTERVAL));
 
             publicRoot = Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "web");
 
@@ -115,7 +110,7 @@ namespace WebMap {
                     var filePath = Path.Combine(publicRoot, requestedFile);
                     try {
                         requestedFileBytes = File.ReadAllBytes(filePath);
-                        if (CACHE_FILES) {
+                        if (WebMapConfig.CACHE_SERVER_FILES) {
                             fileCache.Add(requestedFile, requestedFileBytes);
                         }
                     } catch (Exception ex) {
@@ -143,8 +138,17 @@ namespace WebMap {
             var req = e.Request;
             var res = e.Response;
             var rawRequestPath = req.RawUrl;
+            byte[] textBytes;
 
             switch(rawRequestPath) {
+                case "/config":
+                    res.Headers.Add(HttpResponseHeader.CacheControl, "no-cache");
+                    res.ContentType = "application/json";
+                    res.StatusCode = 200;
+                    textBytes = Encoding.UTF8.GetBytes(WebMapConfig.makeClientConfigJSON());
+                    res.ContentLength64 = textBytes.Length;
+                    res.Close(textBytes, true);
+                    return true;
                 case "/map":
                     // Doing things this way to make the full map harder to accidentally see.
                     res.Headers.Add(HttpResponseHeader.CacheControl, "public, max-age=604800, immutable");
@@ -166,7 +170,7 @@ namespace WebMap {
                     res.ContentType = "text/csv";
                     res.StatusCode = 200;
                     var text = String.Join("\n", pins);
-                    var textBytes = Encoding.UTF8.GetBytes(text);
+                    textBytes = Encoding.UTF8.GetBytes(text);
                     res.ContentLength64 = textBytes.Length;
                     res.Close(textBytes, true);
                     return true;
@@ -178,7 +182,7 @@ namespace WebMap {
             httpServer.Start();
 
             if (httpServer.IsListening) {
-                Debug.Log($"~~~ HTTP Server Listening on port {SERVER_PORT} ~~~");
+                Debug.Log($"~~~ HTTP Server Listening on port {WebMapConfig.SERVER_PORT} ~~~");
             } else {
                 Debug.Log("!!! HTTP Server Failed To Start !!!");
             }
