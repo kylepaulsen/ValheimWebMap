@@ -2,7 +2,7 @@ import ui from './ui';
 import constants from "./constants";
 import onPointers from "./onPointers";
 
-const { canvas } = ui;
+const { canvas, map } = ui;
 
 const width = constants.CANVAS_WIDTH;
 const height = constants.CANVAS_HEIGHT;
@@ -18,9 +18,10 @@ canvas.width = width;
 canvas.height = height;
 const ctx = canvas.getContext('2d');
 
-canvas.style.width = "100%";
-canvas.style.left = (window.innerWidth - canvas.offsetWidth) / 2 + 'px';
-canvas.style.top = (window.innerHeight - canvas.offsetHeight) / 2 + 'px';
+map.style.width = '100%';
+map.style.height = map.offsetWidth + 'px';
+map.style.left = (window.innerWidth - map.offsetWidth) / 2 + 'px';
+map.style.top = (window.innerHeight - map.offsetHeight) / 2 + 'px';
 
 let mapImage;
 let fogImage;
@@ -49,30 +50,31 @@ const createIconEl = (iconObj) => {
 };
 
 const updateIcons = () => {
-	const canvasOffsetScale = canvas.offsetWidth / width;
-
 	mapIcons.forEach(iconObj => {
-		let iconElement = document.getElementById(iconObj.id);
-		if (!iconElement) {
-			iconElement = createIconEl(iconObj);
-			document.body.appendChild(iconElement);
+		let firstRender = false;
+		if (!iconObj.el) {
+			firstRender = true;
+			iconObj.el = createIconEl(iconObj);
+			map.appendChild(iconObj.el);
 		}
 		const isIconHidden = hiddenIcons[iconObj.type];
-		iconElement.style.display = isIconHidden ? 'none' : 'block';
-		const adjustX = (iconElement.offsetWidth / 2);
-		const adjustY = (iconElement.offsetHeight / 2);
+		iconObj.el.style.display = isIconHidden ? 'none' : 'block';
+		if (!firstRender && iconObj.static) {
+			return;
+		}
+
 		const imgX = iconObj.x / pixelSize + coordOffset;
 		const imgY = height - (iconObj.z / pixelSize + coordOffset);
 
-		iconElement.style.left = (imgX * canvasOffsetScale + canvas.offsetLeft) - adjustX + 'px';
-		iconElement.style.top = (imgY * canvasOffsetScale + canvas.offsetTop) - adjustY + 'px';
+		iconObj.el.style.left = 100 * imgX / width + '%';
+		iconObj.el.style.top = 100 * imgY / height + '%';
 	});
 };
 
 window.addEventListener('mousemove', e => {
-	const canvasOffsetScale = canvas.offsetWidth / width;
-	const x = pixelSize * (-coordOffset + (e.clientX - canvas.offsetLeft) / canvasOffsetScale);
-	const y = pixelSize * (height - coordOffset + (canvas.offsetTop - e.clientY) / canvasOffsetScale);
+	const canvasOffsetScale = map.offsetWidth / width;
+	const x = pixelSize * (-coordOffset + (e.clientX - map.offsetLeft) / canvasOffsetScale);
+	const y = pixelSize * (height - coordOffset + (map.offsetTop - e.clientY) / canvasOffsetScale);
 	ui.coords.textContent = `${x.toFixed(2)} , ${y.toFixed(2)}`;
 });
 
@@ -89,10 +91,9 @@ const addIcon = (iconObj, update = true) => {
 const removeIcon = (iconObj) => {
 	const idx = mapIcons.indexOf(iconObj);
 	if (idx > -1) {
-		mapIcons.splice(mapIcons.indexOf(iconObj), 1);
-		const iconElement = document.getElementById(iconObj.id);
-		if (iconElement) {
-			iconElement.remove();
+		mapIcons.splice(idx, 1);
+		if (iconObj.el) {
+			iconObj.el.remove();
 		}
 	}
 };
@@ -133,7 +134,8 @@ const setZoom = function(zoomP) {
 	const maxZoom = 8000 * devicePixelRatio;
 	zoomP = Math.min(Math.max(Math.round(zoomP), minZoom), maxZoom);
 	currentZoom = zoomP;
-	canvas.style.width = `${zoomP}%`;
+	map.style.width = `${zoomP}%`;
+	map.style.height = map.offsetWidth + 'px';
 };
 
 const init = (options) => {
@@ -158,12 +160,16 @@ const init = (options) => {
 		}
 		const zoomRatio = currentZoom / oldZoom;
 
-		canvas.style.left = zoomRatio * (canvas.offsetLeft - e.clientX) + e.clientX + 'px';
-		canvas.style.top = zoomRatio * (canvas.offsetTop - e.clientY) + e.clientY + 'px';
+		map.style.left = zoomRatio * (map.offsetLeft - e.clientX) + e.clientX + 'px';
+		map.style.top = zoomRatio * (map.offsetTop - e.clientY) + e.clientY + 'px';
+
 		updateIcons();
 	};
 
 	window.addEventListener('wheel', zoomChange);
+	window.addEventListener('resize', () => {
+		map.style.height = map.offsetWidth + 'px';
+	});
 
 	const canvasPreDragPos = {};
 	let isZooming = false;
@@ -171,8 +177,8 @@ const init = (options) => {
 	onPointers(window, {
 		down: (pointers) => {
 			if (pointers.length === 1) {
-				canvasPreDragPos.x = canvas.offsetLeft;
-				canvasPreDragPos.y = canvas.offsetTop;
+				canvasPreDragPos.x = map.offsetLeft;
+				canvasPreDragPos.y = map.offsetTop;
 			} else if (pointers.length === 2) {
 				isZooming = true;
 				lastZoomDist = undefined;
@@ -181,8 +187,9 @@ const init = (options) => {
 		move: (pointers) => {
 			if (pointers.length === 1 && !isZooming) {
 				const e = pointers[0].event;
-				canvas.style.left = canvasPreDragPos.x + (e.clientX - pointers[0].downEvent.clientX) + 'px';
-				canvas.style.top = canvasPreDragPos.y + (e.clientY - pointers[0].downEvent.clientY) + 'px';
+				map.style.left = canvasPreDragPos.x + (e.clientX - pointers[0].downEvent.clientX) + 'px';
+				map.style.top = canvasPreDragPos.y + (e.clientY - pointers[0].downEvent.clientY) + 'px';
+
 				updateIcons();
 			} else if (pointers.length === 2) {
 				const x1 = pointers[0].event.clientX;

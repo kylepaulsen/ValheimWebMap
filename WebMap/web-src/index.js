@@ -79,7 +79,8 @@ const setup = async () => {
 				name: lineParts[3],
 				x: lineParts[4],
 				z: lineParts[5],
-				text: lineParts[6]
+				text: lineParts[6],
+				static: true
 			};
 			map.addIcon(pin, false);
 		});

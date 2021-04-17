@@ -14,14 +14,20 @@ html, body {
 
 canvas {
 	image-rendering: pixelated;
-	position: absolute;
-	border: 2px solid #228;
+	width: 100%;
+	height: 100%;
 }
 
 @keyframes pulse {
 	from { transform: scale(1); }
 	50% { transform: scale(1.5); }
 	to { transform: scale(1); }
+}
+
+
+.map {
+	position: fixed;
+	border: 2px solid #228;
 }
 
 .menu-btn {
@@ -102,11 +108,12 @@ canvas {
 }
 
 .mapIcon {
-	position: fixed;
+	position: absolute;
 	width: 32px;
 	height: 32px;
 	background-image: url('mapIcons.png');
 	background-size: 160px;
+	transform: translate(-50%, -50%);
 }
 
 .mapIcon div {
