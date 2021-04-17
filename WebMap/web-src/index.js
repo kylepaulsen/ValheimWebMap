@@ -2,6 +2,7 @@ import constants from "./constants";
 import websocket from "./websocket";
 import map from "./map";
 import players from "./players";
+import ui from "./ui";
 
 const mapImage = document.createElement('img');
 const fogImage = document.createElement('img');
@@ -95,6 +96,33 @@ const setup = async () => {
 
 	window.addEventListener('resize', () => {
 		map.update();
+	});
+
+	ui.menuBtn.addEventListener('click', () => {
+		ui.menu.classList.toggle('menuOpen');
+	});
+
+	const closeMenu = (e) => {
+		const inMenu = e.target.closest('.menu');
+		const inMenuBtn = e.target.closest('.menu-btn');
+		if (!inMenu && !inMenuBtn) {
+			ui.menu.classList.remove('menuOpen');
+		}
+	};
+	window.addEventListener('mousedown', closeMenu);
+	window.addEventListener('touchstart', closeMenu);
+
+	const hideCheckboxes = ui.menu.querySelectorAll('.hideCheckbox');
+	hideCheckboxes.forEach(el => {
+		el.addEventListener('change', () => {
+			map.setIconHidden(el.dataset.hide, el.checked || ui.hideAll.checked);
+			if (el.dataset.hide === 'all') {
+				hideCheckboxes.forEach(el2 => {
+					map.setIconHidden(el2.dataset.hide, el.checked || el2.checked);
+				});
+			}
+			map.updateIcons();
+		});
 	});
 };
 

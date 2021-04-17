@@ -33,11 +33,12 @@ fogCanvasCtx.fillStyle = '#ffffff';
 let currentZoom = 100;
 
 const mapIcons = [];
+const hiddenIcons = {};
 
 const createIconEl = (iconObj) => {
 	const iconEl = document.createElement('div');
 	iconEl.id = iconObj.id;
-	iconEl.className = `mapIcon ${iconObj.type}`;
+	iconEl.className = `mapText mapIcon ${iconObj.type}`;
 	if (iconObj.zIndex) {
 		iconEl.style.zIndex = iconObj.zIndex;
 	}
@@ -56,6 +57,8 @@ const updateIcons = () => {
 			iconElement = createIconEl(iconObj);
 			document.body.appendChild(iconElement);
 		}
+		const isIconHidden = hiddenIcons[iconObj.type];
+		iconElement.style.display = isIconHidden ? 'none' : 'block';
 		const adjustX = (iconElement.offsetWidth / 2);
 		const adjustY = (iconElement.offsetHeight / 2);
 		const imgX = iconObj.x / pixelSize + coordOffset;
@@ -65,6 +68,13 @@ const updateIcons = () => {
 		iconElement.style.top = (imgY * canvasOffsetScale + canvas.offsetTop) - adjustY + 'px';
 	});
 };
+
+window.addEventListener('mousemove', e => {
+	const canvasOffsetScale = canvas.offsetWidth / width;
+	const x = pixelSize * (-coordOffset + (e.clientX - canvas.offsetLeft) / canvasOffsetScale);
+	const y = pixelSize * (height - coordOffset + (canvas.offsetTop - e.clientY) / canvasOffsetScale);
+	ui.coords.textContent = `${x.toFixed(2)} , ${y.toFixed(2)}`;
+});
 
 const addIcon = (iconObj, update = true) => {
 	if (!iconObj.id) {
@@ -77,10 +87,13 @@ const addIcon = (iconObj, update = true) => {
 };
 
 const removeIcon = (iconObj) => {
-	mapIcons.splice(mapIcons.indexOf(iconObj), 1);
-	const iconElement = document.getElementById(iconObj.id);
-	if (iconElement) {
-		iconElement.remove();
+	const idx = mapIcons.indexOf(iconObj);
+	if (idx > -1) {
+		mapIcons.splice(mapIcons.indexOf(iconObj), 1);
+		const iconElement = document.getElementById(iconObj.id);
+		if (iconElement) {
+			iconElement.remove();
+		}
 	}
 };
 
@@ -89,6 +102,10 @@ const removeIconById = (iconId) => {
 	if (iconToRemove) {
 		removeIcon(iconToRemove);
 	}
+};
+
+const setIconHidden = (type, isHidden) => {
+	hiddenIcons[type] = isHidden;
 };
 
 const redrawMap = () => {
@@ -199,6 +216,7 @@ export default {
 	addIcon,
 	removeIcon,
 	removeIconById,
+	setIconHidden,
 	explore,
 	update: redrawMap,
 	updateIcons,
