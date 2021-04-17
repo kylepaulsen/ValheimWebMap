@@ -19,6 +19,8 @@ namespace WebMap {
         public static double PLAYER_UPDATE_INTERVAL = 0.5;
         public static bool CACHE_SERVER_FILES = false;
 
+        public static string WORLD_NAME = "";
+
         public static TValue GetValueOrDefault<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue) {
 
@@ -97,11 +99,28 @@ namespace WebMap {
             }
         }
 
+        public static string getWorldName() {
+            if (WORLD_NAME != "") {
+                return WORLD_NAME;
+            }
+            string[] arguments = Environment.GetCommandLineArgs();
+            var worldName = "";
+            for (var t = 0; t < arguments.Length; t++) {
+                if (arguments[t] == "-world") {
+                    worldName = arguments[t + 1];
+                    break;
+                }
+            }
+            WORLD_NAME = worldName;
+            return worldName;
+        }
+
         public static string makeClientConfigJSON() {
             var sb = new StringBuilder();
             sb.Length = 0;
 
             sb.Append("{");
+            sb.Append($"\"world_name\":\"{getWorldName()}\",");
             sb.Append($"\"texture_size\":{TEXTURE_SIZE},");
             sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
             sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");

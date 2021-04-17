@@ -35,18 +35,9 @@ namespace WebMap {
             var pluginPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             WebMapConfig.readConfigFile(Path.Combine(pluginPath, "config.json"));
 
-            string[] arguments = Environment.GetCommandLineArgs();
-            var worldName = "";
-            for (var t = 0; t < arguments.Length; t++) {
-                if (arguments[t] == "-world") {
-                    worldName = arguments[t + 1];
-                    break;
-                }
-            }
-
             var mapDataPath = Path.Combine(pluginPath, "map_data");
             Directory.CreateDirectory(mapDataPath);
-            worldDataPath = Path.Combine(mapDataPath, worldName);
+            worldDataPath = Path.Combine(mapDataPath, WebMapConfig.getWorldName());
             Directory.CreateDirectory(worldDataPath);
 
             mapDataServer = new MapDataServer();

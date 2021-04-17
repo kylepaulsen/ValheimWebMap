@@ -32,6 +32,8 @@ const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
 	constants.PIXEL_SIZE = config.pixel_size || 12;
 	constants.EXPLORE_RADIUS = config.explore_radius || 100;
 	constants.UPDATE_INTERVAL = config.update_interval || 0.5;
+	constants.WORLD_NAME = config.world_name;
+	document.title = `Valheim WebMap - ${constants.WORLD_NAME}`;
 	createStyleSheet(`.mapIcon.player {
 		transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
 	}`);
