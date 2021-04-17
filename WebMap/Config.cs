@@ -104,6 +104,7 @@ namespace WebMap {
             sb.Append("{");
             sb.Append($"\"texture_size\":{TEXTURE_SIZE},");
             sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
+            sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");
             sb.Append($"\"explore_radius\":{EXPLORE_RADIUS}");
             sb.Append("}");
 

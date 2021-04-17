@@ -19,11 +19,22 @@ const fetchFog = () => new Promise((res) => {
 	fogImage.src = 'fog';
 });
 
+const createStyleSheet = (styles = '') => {
+	const style = document.createElement("style");
+	style.appendChild(document.createTextNode(styles));
+	document.head.appendChild(style);
+	return style.sheet;
+};
+
 const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
 	constants.CANVAS_WIDTH = config.texture_size || 2048;
 	constants.CANVAS_HEIGHT = config.texture_size || 2048;
 	constants.PIXEL_SIZE = config.pixel_size || 12;
 	constants.EXPLORE_RADIUS = config.explore_radius || 100;
+	constants.UPDATE_INTERVAL = config.update_interval || 0.5;
+	createStyleSheet(`.mapIcon.player {
+		transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
+	}`);
 });
 
 const setup = async () => {
