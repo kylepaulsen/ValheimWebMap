@@ -85,17 +85,19 @@ const setup = async () => {
 		const lines = text.split('\n');
 		lines.forEach(line => {
 			const lineParts = line.split(',');
-			const pin = {
-				id: lineParts[1],
-				uid: lineParts[0],
-				type: lineParts[2],
-				name: lineParts[3],
-				x: lineParts[4],
-				z: lineParts[5],
-				text: lineParts[6],
-				static: true
-			};
-			map.addIcon(pin, false);
+			if (lineParts.length > 5) {
+				const pin = {
+					id: lineParts[1],
+					uid: lineParts[0],
+					type: lineParts[2],
+					name: lineParts[3],
+					x: lineParts[4],
+					z: lineParts[5],
+					text: lineParts[6],
+					static: true
+				};
+				map.addIcon(pin, false);
+			}
 		});
 		map.updateIcons();
 	});

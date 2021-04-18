@@ -20,7 +20,7 @@
     "save_fog_texture_interval": 30,
 
     "// Should the server cache web files to be more performant? Default: true": 0,
-    "cache_server_files": false,
+    "cache_server_files": true,
 
     "// How large is the map texture? Probably dont change this. Default: 2048": 0,
     "texture_size": 2048,

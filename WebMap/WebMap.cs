@@ -47,7 +47,7 @@ namespace WebMap {
             try {
                 mapDataServer.mapImageData = File.ReadAllBytes(mapImagePath);
             } catch (Exception e) {
-                Debug.Log("Failed to read map image data from disk. " + e.Message);
+                Debug.Log("WebMap: Failed to read map image data from disk. " + e.Message);
             }
 
             var fogImagePath = Path.Combine(worldDataPath, "fog.png");
@@ -57,7 +57,7 @@ namespace WebMap {
                 fogTexture.LoadImage(fogBytes);
                 mapDataServer.fogTexture = fogTexture;
             } catch (Exception e) {
-                Debug.Log("Failed to read fog image data from disk... Making new fog image..." + e.Message);
+                Debug.Log("WebMap: Failed to read fog image data from disk... Making new fog image..." + e.Message);
                 var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE, TextureFormat.RGB24, false);
                 var fogColors = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
                 for (var t = 0; t < fogColors.Length; t++) {
@@ -70,7 +70,7 @@ namespace WebMap {
                 try {
                     File.WriteAllBytes(fogImagePath, fogPngBytes);
                 } catch {
-                    Debug.Log("FAILED TO WRITE FOG FILE!");
+                    Debug.Log("WebMap: FAILED TO WRITE FOG FILE!");
                 }
             }
 
@@ -82,7 +82,7 @@ namespace WebMap {
                 var pinsLines = File.ReadAllLines(mapPinsFile);
                 mapDataServer.pins = new List<string>(pinsLines);
             } catch (Exception e) {
-                Debug.Log("Failed to read pins.csv from disk. " + e.Message);
+                Debug.Log("WebMap: Failed to read pins.csv from disk. " + e.Message);
             }
         }
 
@@ -126,12 +126,12 @@ namespace WebMap {
             if (mapDataServer.players.Count > 0 && fogTextureNeedsSaving) {
                 byte[] pngBytes = mapDataServer.fogTexture.EncodeToPNG();
 
-                Debug.Log("Saving fog file...");
+                // Debug.Log("Saving fog file...");
                 try {
                     File.WriteAllBytes(Path.Combine(worldDataPath, "fog.png"), pngBytes);
                     fogTextureNeedsSaving = false;
                 } catch {
-                    Debug.Log("FAILED TO WRITE FOG FILE!");
+                    Debug.Log("WebMap: FAILED TO WRITE FOG FILE!");
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace WebMap {
             try {
                 File.WriteAllLines(mapPinsFile, mapDataServer.pins);
             } catch {
-                Debug.Log("FAILED TO WRITE PINS FILE!");
+                Debug.Log("WebMap: FAILED TO WRITE PINS FILE!");
             }
         }
 
@@ -226,10 +226,10 @@ namespace WebMap {
 
             static void Postfix(ZoneSystem __instance) {
                 if (mapDataServer.mapImageData != null) {
-                    Debug.Log("MAP ALREADY BUILT!");
+                    Debug.Log("WebMap: MAP ALREADY BUILT!");
                     return;
                 }
-                Debug.Log("BUILD MAP!");
+                Debug.Log("WebMap: BUILD MAP!");
 
                 int num = WebMapConfig.TEXTURE_SIZE / 2;
                 float num2 = WebMapConfig.PIXEL_SIZE / 2f;
@@ -302,9 +302,9 @@ namespace WebMap {
                 try {
                     File.WriteAllBytes(Path.Combine(worldDataPath, "map"), pngBytes);
                 } catch {
-                    Debug.Log("FAILED TO WRITE MAP FILE!");
+                    Debug.Log("WebMap: FAILED TO WRITE MAP FILE!");
                 }
-                Debug.Log("BUILDING MAP DONE!");
+                Debug.Log("WebMap: BUILDING MAP DONE!");
             }
         }
 
@@ -389,9 +389,7 @@ namespace WebMap {
                             }
                         }
                         //Debug.Log("SAY!!! " + messageType + " | " + userName + " | " + message);
-                    } catch (Exception e) {
-                        Debug.Log("Failed processing RoutedRPCData" + e);
-                    }
+                    } catch {}
                 } else if (data?.m_methodHash == chatMessageMethodHash) {
                     try {
                         ZPackage package = new ZPackage(data.m_parameters.GetArray());
@@ -405,9 +403,7 @@ namespace WebMap {
                             mapDataServer.BroadcastPing(data.m_senderPeerID, userName, pos);
                         }
                         // Debug.Log("CHAT!!! " + pos + " | " + messageType + " | " + userName + " | " + message);
-                    } catch (Exception e) {
-                        Debug.Log("Failed processing RoutedRPCData" + e);
-                    }
+                    } catch {}
                 }
             }
         }

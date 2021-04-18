@@ -73,7 +73,7 @@ namespace WebMap {
 
             httpServer.OnGet += (sender, e) => {
                 var req = e.Request;
-                Debug.Log("~~~ Got GET Request for: " + req.RawUrl);
+                // Debug.Log("~~~ Got GET Request for: " + req.RawUrl);
 
                 if (ProcessSpecialRoutes(e)) {
                     return;
@@ -114,7 +114,7 @@ namespace WebMap {
                             fileCache.Add(requestedFile, requestedFileBytes);
                         }
                     } catch (Exception ex) {
-                        Debug.Log("FAILED TO READ FILE! " + ex.Message);
+                        Debug.Log("WebMap: FAILED TO READ FILE! " + ex.Message);
                     }
                 }
 
@@ -182,9 +182,9 @@ namespace WebMap {
             httpServer.Start();
 
             if (httpServer.IsListening) {
-                Debug.Log($"~~~ HTTP Server Listening on port {WebMapConfig.SERVER_PORT} ~~~");
+                Debug.Log($"WebMap: HTTP Server Listening on port {WebMapConfig.SERVER_PORT}");
             } else {
-                Debug.Log("!!! HTTP Server Failed To Start !!!");
+                Debug.Log("WebMap: HTTP Server Failed To Start !!!");
             }
         }
 
