@@ -25,6 +25,8 @@ const actions = {
 						newPlayer.x = xyz[0];
 						newPlayer.y = xyz[1];
 						newPlayer.z = xyz[2];
+					} else {
+						newPlayer.hidden = true;
 					}
 					playerData.push(newPlayer);
 					newPlayer = {};

@@ -7,6 +7,9 @@ const init = () => {
 	websocket.addActionListener('players', (players) => {
 		players.forEach((player) => {
 			let playerMapIcon = playerMapIcons[player.id];
+			if (player.hidden) {
+				return;
+			}
 			if (!playerMapIcon) {
 				playerMapIcon = { ...player, type: 'player', text: player.name, zIndex: 5 };
 				map.addIcon(playerMapIcon);
@@ -15,9 +18,9 @@ const init = () => {
 			playerMapIcon.lastUpdate = Date.now();
 			playerMapIcon.x = player.x;
 			playerMapIcon.z = player.z;
-			map.updateIcons();
 			map.explore(player.x, player.z);
 		});
+		map.updateIcons();
 	});
 
 	setInterval(() => {

@@ -6,13 +6,19 @@ For players to show up on the map, they must set `visible to other players` in t
 
 This has only been tested on a Valheim dedicated server. I'm not sure this will work with the built in server inclued with the base game.
 
+## Features
+
+* A explorable map of your Valheim world in your browser that you can zoom with the mousewheel or pinch zoom on mobile.
+* Players can place their own pins with chat commands (see below for more info)
+* Map pings from in game players will show up on the web map as well.
+
 ## Installation
 
 Place the WebMap directory in:
 
 `Steam\steamapps\common\Valheim dedicated server\BepInEx\plugins\WebMap`
 
-Optionally, open `config.json` with a text editor and change stuff in there.
+Optionally, open `WebMap/config.json` with a text editor and change stuff in there.
 
 ## Chat Commands
 
