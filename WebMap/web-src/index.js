@@ -8,7 +8,7 @@ const mapImage = document.createElement('img');
 const fogImage = document.createElement('img');
 
 const fetchMap = () => new Promise((res) => {
-	fetch('/map').then(res => res.blob()).then((mapBlob) => {
+	fetch('map').then(res => res.blob()).then((mapBlob) => {
 		mapImage.onload = res;
 		mapImage.src = URL.createObjectURL(mapBlob);
 	});
@@ -35,7 +35,7 @@ const parseVector3 = str => {
 	};
 };
 
-const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
+const fetchConfig = fetch('config').then(res => res.json()).then(config => {
 	constants.CANVAS_WIDTH = config.texture_size || 2048;
 	constants.CANVAS_HEIGHT = config.texture_size || 2048;
 	constants.PIXEL_SIZE = config.pixel_size || 12;
