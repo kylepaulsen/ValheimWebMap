@@ -4,6 +4,8 @@ using System.IO;
 using System.Text;
 using TinyJson;
 
+using UnityEngine;
+
 namespace WebMap {
 
     static class WebMapConfig {
@@ -20,6 +22,7 @@ namespace WebMap {
         public static bool CACHE_SERVER_FILES = false;
 
         public static string WORLD_NAME = "";
+        public static Vector3 WORLD_START_POS = Vector3.zero;
 
         public static TValue GetValueOrDefault<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue) {
@@ -121,6 +124,7 @@ namespace WebMap {
 
             sb.Append("{");
             sb.Append($"\"world_name\":\"{getWorldName()}\",");
+            sb.Append($"\"world_start_pos\": \"{WORLD_START_POS.x},{WORLD_START_POS.y},{WORLD_START_POS.z}\",");
             sb.Append($"\"texture_size\":{TEXTURE_SIZE},");
             sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
             sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");

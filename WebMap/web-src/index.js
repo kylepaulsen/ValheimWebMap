@@ -26,6 +26,15 @@ const createStyleSheet = (styles = '') => {
 	return style.sheet;
 };
 
+const parseVector3 = str => {
+	const strParts = str.split(',');
+	return {
+		x: parseFloat(strParts[0]),
+		y: parseFloat(strParts[1]),
+		z: parseFloat(strParts[2]),
+	};
+};
+
 const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
 	constants.CANVAS_WIDTH = config.texture_size || 2048;
 	constants.CANVAS_HEIGHT = config.texture_size || 2048;
@@ -33,6 +42,7 @@ const fetchConfig = fetch('/config').then(res => res.json()).then(config => {
 	constants.EXPLORE_RADIUS = config.explore_radius || 100;
 	constants.UPDATE_INTERVAL = config.update_interval || 0.5;
 	constants.WORLD_NAME = config.world_name;
+	constants.WORLD_START_POSITION = parseVector3(config.world_start_pos);
 	document.title = `Valheim WebMap - ${constants.WORLD_NAME}`;
 	createStyleSheet(`.mapIcon.player {
 		transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
@@ -56,8 +66,8 @@ const setup = async () => {
 
 	map.addIcon({
 		type: 'start',
-		x: 0,
-		z: 0
+		x: constants.WORLD_START_POSITION.x,
+		z: constants.WORLD_START_POSITION.z
 	});
 
 	const pings = {};

@@ -76,7 +76,8 @@ Object.keys(actions).forEach(key => {
 });
 
 const init = () => {
-	const ws = new WebSocket(`ws://${location.host}`);
+	const websocketUrl = location.href.split('?')[0].replace(/^http/, 'ws');
+	const ws = new WebSocket(websocketUrl);
 	ws.addEventListener('message', (e) => {
 		const lines = e.data.trim().split('\n');
 		const action = lines.shift();
