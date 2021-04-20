@@ -103,7 +103,7 @@ namespace WebMap {
             }
 
             try {
-                DEFAULT_ZOOM = (int)configJson.GetValueOrDefault("default_zoom", 12);
+                DEFAULT_ZOOM = (int)configJson.GetValueOrDefault("default_zoom", 100);
             } catch {
                 System.Console.WriteLine("~~~ WebMap: FAILED TO PARSE default_zoom VALUE IN CONFIG FILE AT: " + configFile + " . INVALID TYPE?");
             }
@@ -135,8 +135,8 @@ namespace WebMap {
             sb.Append($"\"texture_size\":{TEXTURE_SIZE},");
             sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
             sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");
-            sb.Append($"\"explore_radius\":{EXPLORE_RADIUS}");
-            sb.Append($"\"default_zoom\":{DEFAULT_ZOOM},");
+            sb.Append($"\"explore_radius\":{EXPLORE_RADIUS},");
+            sb.Append($"\"default_zoom\":{DEFAULT_ZOOM}");
             sb.Append("}");
 
             return sb.ToString();
