@@ -146,6 +146,12 @@ const init = (options) => {
 
 	redrawMap();
 
+	if (constants.DEFAULT_ZOOM != 100) {
+		setZoom(constants.DEFAULT_ZOOM);
+		map.style.left = (window.innerWidth - map.offsetWidth) / 2 + 'px';
+		map.style.top = (window.innerHeight - map.offsetHeight) / 2 + 'px';
+	}
+
 	const zoomChange = (e, mult = 1) => {
 		const oldZoom = currentZoom;
 

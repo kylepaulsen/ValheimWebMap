@@ -26,5 +26,8 @@
     "texture_size": 2048,
 
     "// How many in game units does a map pixel represent? Probably dont change this. Default: 12": 0,
-    "pixel_size": 12
+    "pixel_size": 12,
+
+    "// Default map zoom. Default: 100": 0,
+    "default_zoom": 100
 }

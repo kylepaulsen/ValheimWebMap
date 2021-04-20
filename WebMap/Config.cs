@@ -23,6 +23,7 @@ namespace WebMap {
 
         public static string WORLD_NAME = "";
         public static Vector3 WORLD_START_POS = Vector3.zero;
+        public static int DEFAULT_ZOOM = 100;
 
         public static TValue GetValueOrDefault<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue) {
@@ -100,6 +101,12 @@ namespace WebMap {
             } catch {
                 System.Console.WriteLine("~~~ WebMap: FAILED TO PARSE cache_server_files VALUE IN CONFIG FILE AT: " + configFile + " . INVALID TYPE?");
             }
+
+            try {
+                DEFAULT_ZOOM = (int)configJson.GetValueOrDefault("default_zoom", 12);
+            } catch {
+                System.Console.WriteLine("~~~ WebMap: FAILED TO PARSE default_zoom VALUE IN CONFIG FILE AT: " + configFile + " . INVALID TYPE?");
+            }
         }
 
         public static string getWorldName() {
@@ -129,6 +136,7 @@ namespace WebMap {
             sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
             sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");
             sb.Append($"\"explore_radius\":{EXPLORE_RADIUS}");
+            sb.Append($"\"default_zoom\":{DEFAULT_ZOOM},");
             sb.Append("}");
 
             return sb.ToString();
