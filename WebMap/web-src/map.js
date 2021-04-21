@@ -129,13 +129,24 @@ const explore = (mapX, mapZ) => {
 	redrawMap();
 };
 
-const setZoom = function(zoomP) {
+const setZoom = function(zoomP, zoomTowardsX, zoomTowardsY) {
+	if (zoomTowardsX === undefined) {
+		zoomTowardsX = window.innerWidth / 2;
+		zoomTowardsY = window.innerHeight / 2;
+	}
+	const oldZoom = currentZoom;
 	const minZoom = 50;
 	const maxZoom = 8000 * devicePixelRatio;
 	zoomP = Math.min(Math.max(Math.round(zoomP), minZoom), maxZoom);
 	currentZoom = zoomP;
 	map.style.width = `${zoomP}%`;
 	map.style.height = map.offsetWidth + 'px';
+
+	const zoomRatio = currentZoom / oldZoom;
+	map.style.left = zoomRatio * (map.offsetLeft - zoomTowardsX) + zoomTowardsX + 'px';
+	map.style.top = zoomRatio * (map.offsetTop - zoomTowardsY) + zoomTowardsY + 'px';
+
+	updateIcons();
 };
 
 const init = (options) => {
@@ -148,23 +159,20 @@ const init = (options) => {
 
 	const zoomChange = (e, mult = 1) => {
 		const oldZoom = currentZoom;
-
 		const zoomAmount = Math.max(Math.floor(oldZoom / 5), 1) * mult;
 		const scrollAmt = e.deltaY === 0 ? e.deltaX : e.deltaY;
 		if (scrollAmt > 0) {
 			// zoom out.
-			setZoom(oldZoom - zoomAmount);
+			setZoom(oldZoom - zoomAmount, e.clientX, e.clientY);
 		} else {
 			// zoom in.
-			setZoom(oldZoom + zoomAmount);
+			setZoom(oldZoom + zoomAmount, e.clientX, e.clientY);
 		}
-		const zoomRatio = currentZoom / oldZoom;
-
-		map.style.left = zoomRatio * (map.offsetLeft - e.clientX) + e.clientX + 'px';
-		map.style.top = zoomRatio * (map.offsetTop - e.clientY) + e.clientY + 'px';
-
-		updateIcons();
 	};
+
+	if (options.zoom) {
+		setZoom(options.zoom);
+	}
 
 	window.addEventListener('wheel', zoomChange);
 	window.addEventListener('resize', () => {

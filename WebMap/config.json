@@ -7,6 +7,9 @@
     "// A larger explore_radius reveals the map more quickly. Default: 100": 0,
     "explore_radius": 100,
 
+    "// How zoomed in should the web map start at? Higher is more zoomed in. Default: 200": 0,
+    "default_zoom": 200,
+
     "// How many pins each client is allowed to make before old ones start being deleted. Default: 50": 0,
     "max_pins_per_user": 50,
 

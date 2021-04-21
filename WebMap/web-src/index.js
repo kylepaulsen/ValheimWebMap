@@ -43,6 +43,7 @@ const fetchConfig = fetch('config').then(res => res.json()).then(config => {
 	constants.UPDATE_INTERVAL = config.update_interval || 0.5;
 	constants.WORLD_NAME = config.world_name;
 	constants.WORLD_START_POSITION = parseVector3(config.world_start_pos);
+	constants.DEFAULT_ZOOM = config.default_zoom || 200;
 	document.title = `Valheim WebMap - ${constants.WORLD_NAME}`;
 	createStyleSheet(`.mapIcon.player {
 		transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
@@ -61,7 +62,8 @@ const setup = async () => {
 
 	map.init({
 		mapImage,
-		fogImage
+		fogImage,
+		zoom: constants.DEFAULT_ZOOM
 	});
 
 	map.addIcon({
