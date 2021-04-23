@@ -125,18 +125,32 @@ namespace WebMap {
             return worldName;
         }
 
+        private static System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.InvariantCulture;
+        public static string str(int n) {
+            return n.ToString(culture);
+        }
+        public static string str(float n) {
+            return n.ToString(culture);
+        }
+        public static string str(double n) {
+            return n.ToString(culture);
+        }
+        public static string str(long n) {
+            return n.ToString(culture);
+        }
+
         public static string makeClientConfigJSON() {
             var sb = new StringBuilder();
             sb.Length = 0;
 
             sb.Append("{");
             sb.Append($"\"world_name\":\"{getWorldName()}\",");
-            sb.Append($"\"world_start_pos\": \"{WORLD_START_POS.x},{WORLD_START_POS.y},{WORLD_START_POS.z}\",");
-            sb.Append($"\"default_zoom\":{DEFAULT_ZOOM},");
-            sb.Append($"\"texture_size\":{TEXTURE_SIZE},");
-            sb.Append($"\"pixel_size\":{PIXEL_SIZE},");
-            sb.Append($"\"update_interval\":{PLAYER_UPDATE_INTERVAL},");
-            sb.Append($"\"explore_radius\":{EXPLORE_RADIUS}");
+            sb.Append($"\"world_start_pos\": \"{str(WORLD_START_POS.x)},{str(WORLD_START_POS.y)},{str(WORLD_START_POS.z)}\",");
+            sb.Append($"\"default_zoom\":{str(DEFAULT_ZOOM)},");
+            sb.Append($"\"texture_size\":{str(TEXTURE_SIZE)},");
+            sb.Append($"\"pixel_size\":{str(PIXEL_SIZE)},");
+            sb.Append($"\"update_interval\":{str(PLAYER_UPDATE_INTERVAL)},");
+            sb.Append($"\"explore_radius\":{str(EXPLORE_RADIUS)}");
             sb.Append("}");
 
             return sb.ToString();

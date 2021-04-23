@@ -19,9 +19,9 @@ canvas {
 }
 
 @keyframes pulse {
-	from { transform: scale(1); }
-	50% { transform: scale(1.5); }
-	to { transform: scale(1); }
+	from { transform: translate(-50%, -50%) scale(1); }
+	50% { transform: translate(-50%, -50%) scale(1.5); }
+	to { transform: translate(-50%, -50%) scale(1); }
 }
 
 

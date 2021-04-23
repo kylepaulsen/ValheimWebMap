@@ -8,6 +8,7 @@ using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 
 using UnityEngine;
+using static WebMap.WebMapConfig;
 
 namespace WebMap {
 
@@ -57,7 +58,7 @@ namespace WebMap {
                     var zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
                     var pos = zdoData.GetPosition();
                     if (player.m_publicRefPos) {
-                        dataString += $"{player.m_uid}\n{player.m_playerName}\n{pos.x},{pos.y},{pos.z}\n";
+                        dataString += $"{player.m_uid}\n{player.m_playerName}\n{str(pos.x)},{str(pos.y)},{str(pos.z)}\n";
                     } else {
                         dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n";
                     }
@@ -189,12 +190,12 @@ namespace WebMap {
         }
 
         public void BroadcastPing(long id, string name, Vector3 position) {
-            webSocketHandler.Sessions.Broadcast($"ping\n{id}\n{name}\n{position.x},{position.z}");
+            webSocketHandler.Sessions.Broadcast($"ping\n{str(id)}\n{name}\n{str(position.x)},{str(position.z)}");
         }
 
         public void AddPin(string id, string pinId, string type, string name, Vector3 position, string pinText) {
-            pins.Add($"{id},{pinId},{type},{name},{position.x},{position.z},{pinText}");
-            webSocketHandler.Sessions.Broadcast($"pin\n{id}\n{pinId}\n{type}\n{name}\n{position.x},{position.z}\n{pinText}");
+            pins.Add($"{id},{pinId},{type},{name},{str(position.x)},{str(position.z)},{pinText}");
+            webSocketHandler.Sessions.Broadcast($"pin\n{id}\n{pinId}\n{type}\n{name}\n{str(position.x)},{str(position.z)}\n{pinText}");
         }
 
         public void RemovePin(int idx) {

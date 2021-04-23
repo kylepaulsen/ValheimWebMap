@@ -403,7 +403,7 @@ namespace WebMap {
                         // string message = package.ReadString();
                         // message = (message == null ? "" : message).Trim();
 
-                        if (messageType == 3) {
+                        if (messageType == (int)Talker.Type.Ping) {
                             mapDataServer.BroadcastPing(data.m_senderPeerID, userName, pos);
                         }
                         // Debug.Log("CHAT!!! " + pos + " | " + messageType + " | " + userName + " | " + message);
