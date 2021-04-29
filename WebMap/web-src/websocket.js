@@ -7,32 +7,34 @@ const addActionListener = (type, func) => {
 };
 
 const actions = {
-	players: (lines) => {
+	players: (lines, message) => {
+		const msg = message.replace(/^players\n/, '');
+		const playerSections = msg.split('\n\n');
 		const playerData = [];
-		let newPlayer = {};
-		lines.forEach((line, idx) => {
-			const dataIdx = idx % 3;
-			switch (dataIdx) {
-				case 0:
-					newPlayer.id = line;
-					break;
-				case 1:
-					newPlayer.name = line;
-					break;
-				case 2:
-					if (line !== 'hidden') {
-						const xyz = line.split(',').map(parseFloat);
-						newPlayer.x = xyz[0];
-						newPlayer.y = xyz[1];
-						newPlayer.z = xyz[2];
-					} else {
-						newPlayer.hidden = true;
-					}
-					playerData.push(newPlayer);
-					newPlayer = {};
-					break;
+		playerSections.forEach(playerSection => {
+			const playerLines = playerSection.split('\n');
+			const newPlayer = {
+				id: playerLines[0],
+				name: playerLines[1],
+				health: parseFloat(playerLines[3]),
+				maxHealth: parseFloat(playerLines[4])
+			};
+
+			if (playerLines[2] !== 'hidden') {
+				const xyz = playerLines[2].split(',').map(parseFloat);
+				newPlayer.x = xyz[0];
+				newPlayer.y = xyz[1];
+				newPlayer.z = xyz[2];
+			} else {
+				newPlayer.hidden = true;
 			}
+			playerData.push(newPlayer);
 		});
+		// const fakePlayer = playerData[0];
+		// if (fakePlayer) {
+		// 	playerData.push({ ...fakePlayer, x: fakePlayer.x + 1000, z: fakePlayer.z - 2000, id: 'asd', name: 'lolol' });
+		// }
+
 		actionListeners.players.forEach(func => {
 			func(playerData);
 		});
@@ -79,11 +81,12 @@ const init = () => {
 	const websocketUrl = location.href.split('?')[0].replace(/^http/, 'ws');
 	const ws = new WebSocket(websocketUrl);
 	ws.addEventListener('message', (e) => {
-		const lines = e.data.trim().split('\n');
+		const message = e.data.trim();
+		const lines = message.split('\n');
 		const action = lines.shift();
 		const actionFunc = actions[action];
 		if (actionFunc) {
-			actionFunc(lines);
+			actionFunc(lines, message);
 		} else {
 			console.log("unknown websocket message: ", e.data);
 		}

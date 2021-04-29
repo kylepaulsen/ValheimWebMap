@@ -129,11 +129,11 @@ namespace WebMap {
         public static string str(int n) {
             return n.ToString(culture);
         }
-        public static string str(float n) {
-            return n.ToString(culture);
+        public static string str(float n, int precision = 2) {
+            return n.ToString("F" + precision, culture);
         }
-        public static string str(double n) {
-            return n.ToString(culture);
+        public static string str(double n, int precision = 2) {
+            return n.ToString("F" + precision, culture);
         }
         public static string str(long n) {
             return n.ToString(culture);

@@ -62,15 +62,19 @@ namespace WebMap {
 
                     if (zdoData != null) {
                         var pos = zdoData.GetPosition();
+                        var maxHealth = zdoData.GetFloat("max_health", 25f);
+                        var health = zdoData.GetFloat("health", maxHealth);
+                        maxHealth = Mathf.Max(maxHealth, health);
+
                         if (player.m_publicRefPos) {
-                            dataString += $"{player.m_uid}\n{player.m_playerName}\n{str(pos.x)},{str(pos.y)},{str(pos.z)}\n";
+                            dataString += $"{player.m_uid}\n{player.m_playerName}\n{str(pos.x)},{str(pos.y)},{str(pos.z)}\n{str(health)}\n{str(maxHealth)}\n\n";
                         } else {
-                            dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n";
+                            dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n\n";
                         }
                     }
                 });
                 if (dataString.Length > 0) {
-                    webSocketHandler.Sessions.Broadcast("players\n" + dataString);
+                    webSocketHandler.Sessions.Broadcast("players\n" + dataString.Trim());
                 }
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(WebMapConfig.PLAYER_UPDATE_INTERVAL));
 

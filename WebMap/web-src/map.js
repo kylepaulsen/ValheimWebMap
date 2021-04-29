@@ -35,6 +35,7 @@ let currentZoom = 100;
 
 const mapIcons = [];
 const hiddenIcons = {};
+let followIcon;
 
 const createIconEl = (iconObj) => {
 	const iconEl = document.createElement('div');
@@ -44,9 +45,30 @@ const createIconEl = (iconObj) => {
 		iconEl.style.zIndex = iconObj.zIndex;
 	}
 	const iconTextEl = document.createElement('div');
+	iconTextEl.className = 'center text';
 	iconTextEl.textContent = iconObj.text;
 	iconEl.appendChild(iconTextEl);
+	if (iconObj.node) {
+		iconEl.appendChild(iconObj.node);
+	}
 	return iconEl;
+};
+
+const centerOnIcon = (iconObj) => {
+	const rect = iconObj.el.getBoundingClientRect();
+	const deltaX = window.innerWidth / 2 - rect.left;
+	const deltaY = window.innerHeight / 2 - rect.top;
+	if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
+		map.style.left = deltaX + map.offsetLeft + 'px';
+		map.style.top = deltaY + map.offsetTop + 'px';
+	}
+};
+
+const setFollowIcon = (iconObj) => {
+	followIcon = iconObj;
+	if (followIcon) {
+		centerOnIcon(followIcon);
+	}
 };
 
 const updateIcons = () => {
@@ -69,6 +91,10 @@ const updateIcons = () => {
 		iconObj.el.style.left = 100 * imgX / width + '%';
 		iconObj.el.style.top = 100 * imgY / height + '%';
 	});
+
+	if (followIcon) {
+		centerOnIcon(followIcon);
+	}
 };
 
 window.addEventListener('mousemove', e => {
@@ -94,6 +120,7 @@ const removeIcon = (iconObj) => {
 		mapIcons.splice(idx, 1);
 		if (iconObj.el) {
 			iconObj.el.remove();
+			iconObj.el = undefined;
 		}
 	}
 };
@@ -149,6 +176,14 @@ const setZoom = function(zoomP, zoomTowardsX, zoomTowardsY) {
 	updateIcons();
 };
 
+let zoomingClassTimeout;
+const removeZoomingClass = () => {
+	clearTimeout(zoomingClassTimeout);
+	zoomingClassTimeout = setTimeout(() => {
+		map.classList.remove('zooming');
+	}, 100);
+};
+
 const init = (options) => {
 	mapImage = options.mapImage;
 	fogImage = options.fogImage;
@@ -158,6 +193,7 @@ const init = (options) => {
 	redrawMap();
 
 	const zoomChange = (e, mult = 1) => {
+		map.classList.add('zooming');
 		const oldZoom = currentZoom;
 		const zoomAmount = Math.max(Math.floor(oldZoom / 5), 1) * mult;
 		const scrollAmt = e.deltaY === 0 ? e.deltaX : e.deltaY;
@@ -168,6 +204,7 @@ const init = (options) => {
 			// zoom in.
 			setZoom(oldZoom + zoomAmount, e.clientX, e.clientY);
 		}
+		removeZoomingClass();
 	};
 
 	if (options.zoom) {
@@ -193,7 +230,7 @@ const init = (options) => {
 			}
 		},
 		move: (pointers) => {
-			if (pointers.length === 1 && !isZooming) {
+			if (pointers.length === 1 && !isZooming && !followIcon) {
 				const e = pointers[0].event;
 				map.style.left = canvasPreDragPos.x + (e.clientX - pointers[0].downEvent.clientX) + 'px';
 				map.style.top = canvasPreDragPos.y + (e.clientY - pointers[0].downEvent.clientY) + 'px';
@@ -233,6 +270,8 @@ export default {
 	removeIconById,
 	setIconHidden,
 	explore,
+	centerOnIcon,
+	setFollowIcon,
 	update: redrawMap,
 	updateIcons,
 	canvas

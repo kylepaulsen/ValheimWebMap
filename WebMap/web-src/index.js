@@ -45,9 +45,14 @@ const fetchConfig = fetch('config').then(res => res.json()).then(config => {
 	constants.WORLD_START_POSITION = parseVector3(config.world_start_pos);
 	constants.DEFAULT_ZOOM = config.default_zoom || 200;
 	document.title = `Valheim WebMap - ${constants.WORLD_NAME}`;
-	createStyleSheet(`.mapIcon.player {
-		transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
-	}`);
+	createStyleSheet(`
+		.mapIcon.player {
+			transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
+		}
+		.map.smooth {
+			transition: top ${constants.UPDATE_INTERVAL}s linear, left ${constants.UPDATE_INTERVAL}s linear;
+		}
+	`);
 });
 
 const setup = async () => {
@@ -140,7 +145,7 @@ const setup = async () => {
 	window.addEventListener('mousedown', closeMenu);
 	window.addEventListener('touchstart', closeMenu);
 
-	const hideCheckboxes = ui.menu.querySelectorAll('.hideCheckbox');
+	const hideCheckboxes = ui.menu.querySelectorAll('.hideIconCheckbox');
 	hideCheckboxes.forEach(el => {
 		el.addEventListener('change', () => {
 			map.setIconHidden(el.dataset.hide, el.checked || ui.hideAll.checked);
@@ -151,6 +156,14 @@ const setup = async () => {
 			}
 			map.updateIcons();
 		});
+	});
+
+	ui.hidePlayerList.addEventListener('change', () => {
+		if (ui.hidePlayerList.checked) {
+			ui.playerListContainer.style.right = -ui.playerListContainer.offsetWidth + 'px';
+		} else {
+			ui.playerListContainer.style.right = 0;
+		}
 	});
 };
 
