@@ -55,12 +55,18 @@ namespace WebMap {
             broadcastTimer = new System.Threading.Timer((e) => {
                 var dataString = "";
                 players.ForEach(player => {
-                    var zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
-                    var pos = zdoData.GetPosition();
-                    if (player.m_publicRefPos) {
-                        dataString += $"{player.m_uid}\n{player.m_playerName}\n{str(pos.x)},{str(pos.y)},{str(pos.z)}\n";
-                    } else {
-                        dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n";
+                    ZDO zdoData = null;
+                    try {
+                        zdoData = ZDOMan.instance.GetZDO(player.m_characterID);
+                    } catch {}
+
+                    if (zdoData != null) {
+                        var pos = zdoData.GetPosition();
+                        if (player.m_publicRefPos) {
+                            dataString += $"{player.m_uid}\n{player.m_playerName}\n{str(pos.x)},{str(pos.y)},{str(pos.z)}\n";
+                        } else {
+                            dataString += $"{player.m_uid}\n{player.m_playerName}\nhidden\n";
+                        }
                     }
                 });
                 if (dataString.Length > 0) {
