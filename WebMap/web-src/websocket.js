@@ -77,6 +77,7 @@ Object.keys(actions).forEach(key => {
 	actionListeners[key] = [];
 });
 
+let connectionTries = 0;
 const init = () => {
 	const websocketUrl = location.href.split('?')[0].replace(/^http/, 'ws');
 	const ws = new WebSocket(websocketUrl);
@@ -90,6 +91,16 @@ const init = () => {
 		} else {
 			console.log("unknown websocket message: ", e.data);
 		}
+	});
+
+	ws.addEventListener('open', () => {
+		connectionTries = 0;
+	});
+
+	ws.addEventListener('close', () => {
+		connectionTries++;
+		const seconds = Math.min(connectionTries * (connectionTries + 1), 120);
+		setTimeout(init, seconds * 1000);
 	});
 };
 
