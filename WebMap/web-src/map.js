@@ -2,34 +2,24 @@ import ui from './ui';
 import constants from "./constants";
 import onPointers from "./onPointers";
 
-const { canvas, map } = ui;
+const { canvas, map, mapBorder, mapBorderCircle } = ui;
 
-const width = constants.CANVAS_WIDTH;
-const height = constants.CANVAS_HEIGHT;
-const exploreRadius = constants.EXPLORE_RADIUS;
-const pixelSize = constants.PIXEL_SIZE;
-const coordOffset = constants.COORD_OFFSET;
+let width = constants.CANVAS_WIDTH;
+let height = constants.CANVAS_HEIGHT;
+let exploreRadius = constants.EXPLORE_RADIUS;
+let pixelSize = constants.PIXEL_SIZE;
+let coordOffset = constants.COORD_OFFSET;
 
 // preload map icons.
 const mapIconImage = document.createElement('img');
 mapIconImage.src = 'mapIcons.png';
 
-canvas.width = width;
-canvas.height = height;
 const ctx = canvas.getContext('2d');
-
-map.style.width = '100%';
-map.style.height = map.offsetWidth + 'px';
-map.style.left = (window.innerWidth - map.offsetWidth) / 2 + 'px';
-map.style.top = (window.innerHeight - map.offsetHeight) / 2 + 'px';
 
 let mapImage;
 let fogImage;
 const fogCanvas = document.createElement('canvas');
-fogCanvas.width = width;
-fogCanvas.height = height;
 const fogCanvasCtx = fogCanvas.getContext('2d');
-fogCanvasCtx.fillStyle = '#ffffff';
 
 let currentZoom = 100;
 
@@ -151,7 +141,7 @@ const explore = (mapX, mapZ) => {
 	const x = mapX / pixelSize + coordOffset;
 	const y = height - (mapZ / pixelSize + coordOffset);
 	fogCanvasCtx.beginPath();
-	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI, false);
+	fogCanvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
 	fogCanvasCtx.fill();
 	redrawMap();
 };
@@ -185,6 +175,27 @@ const removeZoomingClass = () => {
 };
 
 const init = (options) => {
+	width = constants.CANVAS_WIDTH;
+	height = constants.CANVAS_HEIGHT;
+	exploreRadius = constants.EXPLORE_RADIUS;
+	pixelSize = constants.PIXEL_SIZE;
+	coordOffset = constants.COORD_OFFSET;
+
+	canvas.width = width;
+	canvas.height = height;
+	map.style.width = '100%';
+	map.style.height = map.offsetWidth + 'px';
+	map.style.left = (window.innerWidth - map.offsetWidth) / 2 + 'px';
+	map.style.top = (window.innerHeight - map.offsetHeight) / 2 + 'px';
+	fogCanvas.width = width;
+	fogCanvas.height = height;
+	fogCanvasCtx.fillStyle = '#ffffff';
+
+	mapBorder.setAttribute("viewBox", `0 0 ${width} ${height}`);
+	mapBorderCircle.setAttribute("cx", width / 2);
+	mapBorderCircle.setAttribute("cy", width / 2);
+	mapBorderCircle.setAttribute("r", width * 0.4275);
+
 	mapImage = options.mapImage;
 	fogImage = options.fogImage;
 
