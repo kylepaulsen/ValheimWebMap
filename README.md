@@ -11,6 +11,8 @@ This has only been tested on a Valheim dedicated server. I'm not sure this will 
 * A explorable map of your Valheim world in your browser that you can zoom with the mousewheel or pinch zoom on mobile.
 * Players can place their own pins with chat commands (see below for more info)
 * Map pings from in game players will show up on the web map as well.
+* Connected players list.
+* Auto follow player feature.
 
 ## Installation
 
@@ -19,6 +21,12 @@ Place the WebMap directory in:
 `Steam\steamapps\common\Valheim dedicated server\BepInEx\plugins\WebMap`
 
 Optionally, open `WebMap/config.json` with a text editor and change stuff in there.
+
+## Updating
+
+If you are updating, one additional thing you and anyone else using the web map might need to do is clear your browser cache.
+
+You may also be able to hold down the `shift` key and click the reload button in your browser.
 
 ## Chat Commands
 
