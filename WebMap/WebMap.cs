@@ -9,7 +9,8 @@ using UnityEngine;
 using HarmonyLib;
 using static ZRoutedRpc;
 
-namespace WebMap {
+namespace WebMap
+{
     //This attribute is required, and lists metadata for your plugin.
     //The GUID should be a unique ID for this plugin, which is human readable (as it is used in places like the config). I like to use the java package notation, which is "com.[your name here].[your plugin name here]"
     //The name is the name of the plugin that's displayed on load, and the version number just specifies what version the plugin is.
@@ -54,7 +55,7 @@ namespace WebMap {
             try {
                 var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE);
                 var fogBytes = File.ReadAllBytes(fogImagePath);
-                fogTexture.LoadImage(fogBytes);
+                fogTexture.LoadImage(fogBytes, true);
                 mapDataServer.fogTexture = fogTexture;
             } catch (Exception e) {
                 Debug.Log("WebMap: Failed to read fog image data from disk... Making new fog image..." + e.Message);
@@ -65,6 +66,7 @@ namespace WebMap {
                 }
                 fogTexture.SetPixels32(fogColors);
                 var fogPngBytes = fogTexture.EncodeToPNG();
+                
 
                 mapDataServer.fogTexture = fogTexture;
                 try {
@@ -235,6 +237,8 @@ namespace WebMap {
                 }
                 Debug.Log("WebMap: BUILD MAP!");
 
+                var c = Color.black;
+
                 int num = WebMapConfig.TEXTURE_SIZE / 2;
                 float num2 = WebMapConfig.PIXEL_SIZE / 2f;
                 Color32[] colorArray = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
@@ -245,7 +249,7 @@ namespace WebMap {
                         float wx = (float)(j - num) * WebMapConfig.PIXEL_SIZE + num2;
                         float wy = (float)(i - num) * WebMapConfig.PIXEL_SIZE + num2;
                         Heightmap.Biome biome = WorldGenerator.instance.GetBiome(wx, wy);
-                        float biomeHeight = WorldGenerator.instance.GetBiomeHeight(biome, wx, wy);
+                        float biomeHeight = WorldGenerator.instance.GetBiomeHeight(biome, wx, wy, out c);
                         colorArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetPixelColor(biome);
                         treeMaskArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetMaskColor(wx, wy, biomeHeight, biome);
                         heightArray[i * WebMapConfig.TEXTURE_SIZE + j] = biomeHeight;
