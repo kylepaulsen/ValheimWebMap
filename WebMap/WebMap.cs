@@ -55,7 +55,7 @@ namespace WebMap
             try {
                 var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE);
                 var fogBytes = File.ReadAllBytes(fogImagePath);
-                fogTexture.LoadImage(fogBytes, true);
+                fogTexture.LoadImage(fogBytes, false);
                 mapDataServer.fogTexture = fogTexture;
             } catch (Exception e) {
                 Debug.Log("WebMap: Failed to read fog image data from disk... Making new fog image..." + e.Message);
