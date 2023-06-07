@@ -7,13 +7,15 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using HarmonyLib;
+using WebSocketSharp;
 using static ZRoutedRpc;
 
-namespace WebMap {
+namespace WebMap
+{
     //This attribute is required, and lists metadata for your plugin.
     //The GUID should be a unique ID for this plugin, which is human readable (as it is used in places like the config). I like to use the java package notation, which is "com.[your name here].[your plugin name here]"
     //The name is the name of the plugin that's displayed on load, and the version number just specifies what version the plugin is.
-    [BepInPlugin("com.kylepaulsen.valheim.webmap", "WebMap", "1.2.0")]
+    [BepInPlugin("com.kylepaulsen.valheim.webmap", "WebMap", "1.3.0")]
 
     //This is the main declaration of our plugin class. BepInEx searches for all classes inheriting from BaseUnityPlugin to initialize on startup.
     //BaseUnityPlugin itself inherits from MonoBehaviour, so you can use this as a reference for what you can declare and use in your plugin class: https://docs.unity3d.com/ScriptReference/MonoBehaviour.html
@@ -54,7 +56,7 @@ namespace WebMap {
             try {
                 var fogTexture = new Texture2D(WebMapConfig.TEXTURE_SIZE, WebMapConfig.TEXTURE_SIZE);
                 var fogBytes = File.ReadAllBytes(fogImagePath);
-                fogTexture.LoadImage(fogBytes);
+                fogTexture.LoadImage(fogBytes, false);
                 mapDataServer.fogTexture = fogTexture;
             } catch (Exception e) {
                 Debug.Log("WebMap: Failed to read fog image data from disk... Making new fog image..." + e.Message);
@@ -65,6 +67,7 @@ namespace WebMap {
                 }
                 fogTexture.SetPixels32(fogColors);
                 var fogPngBytes = fogTexture.EncodeToPNG();
+                
 
                 mapDataServer.fogTexture = fogTexture;
                 try {
@@ -235,6 +238,8 @@ namespace WebMap {
                 }
                 Debug.Log("WebMap: BUILD MAP!");
 
+                var c = Color.black;
+
                 int num = WebMapConfig.TEXTURE_SIZE / 2;
                 float num2 = WebMapConfig.PIXEL_SIZE / 2f;
                 Color32[] colorArray = new Color32[WebMapConfig.TEXTURE_SIZE * WebMapConfig.TEXTURE_SIZE];
@@ -245,7 +250,7 @@ namespace WebMap {
                         float wx = (float)(j - num) * WebMapConfig.PIXEL_SIZE + num2;
                         float wy = (float)(i - num) * WebMapConfig.PIXEL_SIZE + num2;
                         Heightmap.Biome biome = WorldGenerator.instance.GetBiome(wx, wy);
-                        float biomeHeight = WorldGenerator.instance.GetBiomeHeight(biome, wx, wy);
+                        float biomeHeight = WorldGenerator.instance.GetBiomeHeight(biome, wx, wy, out c);
                         colorArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetPixelColor(biome);
                         treeMaskArray[i * WebMapConfig.TEXTURE_SIZE + j] = GetMaskColor(wx, wy, biomeHeight, biome);
                         heightArray[i * WebMapConfig.TEXTURE_SIZE + j] = biomeHeight;
@@ -336,12 +341,19 @@ namespace WebMap {
                         var zdoData = ZDOMan.instance.GetZDO(peer.m_characterID);
                         var pos = zdoData.GetPosition();
                         ZPackage package = new ZPackage(data.m_parameters.GetArray());
+                        
                         int messageType = package.ReadInt();
-                        string userName = package.ReadString();
-                        string message = package.ReadString();
+                        var userName = package.ReadString();
+                        _ = package.ReadString();
+                        _ = package.ReadString();
+                        var message = package.ReadString();
+
+                        //int messageType = package.ReadInt();
+                        //string userName = package.ReadString();
+                        //string message = package.ReadString();
                         message = (message == null ? "" : message).Trim();
 
-                        if (message.StartsWith("/pin")) {
+                        if (message.StartsWith("createPin")) {
                             var messageParts = message.Split(' ');
                             var pinType = "dot";
                             var startIdx = 1;
@@ -369,13 +381,13 @@ namespace WebMap {
                                 mapDataServer.RemovePin(pinIdx);
                             }
                             SavePins();
-                        } else if (message.StartsWith("/undoPin")) {
+                        } else if (message.StartsWith("undoPin")) {
                             var pinIdx = mapDataServer.pins.FindLastIndex(pin => pin.StartsWith(steamid));
                             if (pinIdx > -1) {
                                 mapDataServer.RemovePin(pinIdx);
                                 SavePins();
                             }
-                        } else if (message.StartsWith("/deletePin")) {
+                        } else if (message.StartsWith("deletePin")) {
                             var messageParts = message.Split(' ');
                             var pinText = "";
                             if (messageParts.Length > 1) {
