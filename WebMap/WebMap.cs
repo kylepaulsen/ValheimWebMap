@@ -7,6 +7,7 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using HarmonyLib;
+using WebSocketSharp;
 using static ZRoutedRpc;
 
 namespace WebMap
@@ -14,7 +15,7 @@ namespace WebMap
     //This attribute is required, and lists metadata for your plugin.
     //The GUID should be a unique ID for this plugin, which is human readable (as it is used in places like the config). I like to use the java package notation, which is "com.[your name here].[your plugin name here]"
     //The name is the name of the plugin that's displayed on load, and the version number just specifies what version the plugin is.
-    [BepInPlugin("com.kylepaulsen.valheim.webmap", "WebMap", "1.2.0")]
+    [BepInPlugin("com.kylepaulsen.valheim.webmap", "WebMap", "1.3.0")]
 
     //This is the main declaration of our plugin class. BepInEx searches for all classes inheriting from BaseUnityPlugin to initialize on startup.
     //BaseUnityPlugin itself inherits from MonoBehaviour, so you can use this as a reference for what you can declare and use in your plugin class: https://docs.unity3d.com/ScriptReference/MonoBehaviour.html
@@ -340,12 +341,19 @@ namespace WebMap
                         var zdoData = ZDOMan.instance.GetZDO(peer.m_characterID);
                         var pos = zdoData.GetPosition();
                         ZPackage package = new ZPackage(data.m_parameters.GetArray());
+                        
                         int messageType = package.ReadInt();
-                        string userName = package.ReadString();
-                        string message = package.ReadString();
+                        var userName = package.ReadString();
+                        _ = package.ReadString();
+                        _ = package.ReadString();
+                        var message = package.ReadString();
+
+                        //int messageType = package.ReadInt();
+                        //string userName = package.ReadString();
+                        //string message = package.ReadString();
                         message = (message == null ? "" : message).Trim();
 
-                        if (message.StartsWith("/pin")) {
+                        if (message.StartsWith("createPin")) {
                             var messageParts = message.Split(' ');
                             var pinType = "dot";
                             var startIdx = 1;
@@ -373,13 +381,13 @@ namespace WebMap
                                 mapDataServer.RemovePin(pinIdx);
                             }
                             SavePins();
-                        } else if (message.StartsWith("/undoPin")) {
+                        } else if (message.StartsWith("undoPin")) {
                             var pinIdx = mapDataServer.pins.FindLastIndex(pin => pin.StartsWith(steamid));
                             if (pinIdx > -1) {
                                 mapDataServer.RemovePin(pinIdx);
                                 SavePins();
                             }
-                        } else if (message.StartsWith("/deletePin")) {
+                        } else if (message.StartsWith("deletePin")) {
                             var messageParts = message.Split(' ');
                             var pinText = "";
                             if (messageParts.Length > 1) {
